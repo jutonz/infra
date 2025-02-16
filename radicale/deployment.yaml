@@ -36,7 +36,7 @@ spec:
               protocol: TCP
           resources:
             limits:
-              memory: "268435456"
+                memory: "256Mi"
           securityContext:
             capabilities:
               add:
@@ -48,16 +48,12 @@ spec:
                 - ALL
             readOnlyRootFilesystem: true
           volumeMounts:
-            - mountPath: /data
-              name: radicale-claim0
-            - mountPath: /config
-              name: radicale-configs
+            - name: radicale-config
+              mountPath: /config/config
+              subPath: config
               readOnly: true
       restartPolicy: Always
       volumes:
-        - name: radicale-claim0
-          persistentVolumeClaim:
-            claimName: radicale-claim0
-        - name: radicale-configs
+        - name: radicale-config
           configMap:
-            claimName: radicale-configs
+            name: radicale-config
