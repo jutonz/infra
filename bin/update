@@ -2,13 +2,9 @@
 
 set -ex
 
-secret_files=(
-  "radicale/secret-users.yaml"
-)
-
-for file in "${secret_files[@]}"; do
-  sops decrypt $file | kubectl apply -f -
-done
-
 kubectl apply -k hello-world/overlays/prod
-kubectl apply -k radicale
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  radicale \
+| kubectl apply -f -

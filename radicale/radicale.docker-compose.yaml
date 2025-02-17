@@ -1,4 +1,5 @@
-# ~/radicale.docker-compose.yaml
+# Not used, but kept around for reference. This is the original compose file
+# upon which the k8s configs were built.
 
 services:
   radicale:

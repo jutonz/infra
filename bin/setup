@@ -1,8 +1,0 @@
-#!/bin/bash
-
-set -ex
-
-op read \
-  "op://Infra/age encryption key/key.txt" \
-  --account=my.1password.com \
-| cat > key.txt
