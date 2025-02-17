@@ -4,5 +4,6 @@ namespace: radicale
 resources:
 - namespace.yaml
 - configmap-config.yaml
+- pvc-data.yaml
 - deployment.yaml
 - service.yaml

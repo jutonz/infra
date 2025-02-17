@@ -52,8 +52,20 @@ spec:
               mountPath: /config/config
               subPath: config
               readOnly: true
+            - name: data
+              mountPath: /data
+            - name: users
+              mountPath: /config/users
+              subPath: users
+              readOnly: true
       restartPolicy: Always
       volumes:
         - name: radicale-config
           configMap:
             name: radicale-config
+        - name: users
+          secret:
+            secretName: users
+        - name: data
+          persistentVolumeClaim:
+            claimName: data
