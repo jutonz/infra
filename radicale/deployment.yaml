@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ./radicale.docker-compose.yaml
+    kompose.version: 1.35.0 (HEAD)
+  labels:
+    io.kompose.service: radicale
+  name: radicale
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: radicale
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f ./radicale.docker-compose.yaml
+        kompose.version: 1.35.0 (HEAD)
+      labels:
+        io.kompose.service: radicale
+    spec:
+      containers:
+        - image: tomsquest/docker-radicale
+          livenessProbe:
+            exec:
+              command:
+                - curl -f http://127.0.0.1:5232 || exit 1
+            failureThreshold: 3
+            periodSeconds: 30
+          name: radicale
+          ports:
+            - containerPort: 5232
+              protocol: TCP
+          resources:
+            limits:
+                memory: "256Mi"
+          securityContext:
+            capabilities:
+              add:
+                - SETUID
+                - SETGID
+                - CHOWN
+                - KILL
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: radicale-config
+              mountPath: /config/config
+              subPath: config
+              readOnly: true
+            - name: data
+              mountPath: /data
+            - name: users
+              mountPath: /config/users
+              subPath: users
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: radicale-config
+          configMap:
+            name: radicale-config
+        - name: users
+          secret:
+            secretName: users
+        - name: data
+          persistentVolumeClaim:
+            claimName: data
