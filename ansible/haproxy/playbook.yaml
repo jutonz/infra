@@ -1,0 +1,24 @@
+- name: Ensure Haproxy is installed
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install Haproxy
+      apt:
+        name: haproxy
+        state: present
+    - name: Copy file
+      copy:
+        src: ./haproxy.cfg
+        dest: /etc/haproxy/haproxy.cfg
+      register: copy_haproxy_config
+    - name: Verify config
+      command: haproxy -f /etc/haproxy/haproxy.cfg -c
+      when: copy_haproxy_config.changed
+    - name: Install letsencrypt hook
+      copy:
+        src: ./letsencrypt/renewal-hooks/deploy/restart-haproxy.sh
+        dest: /etc/letsencrypt/renewal-hooks/deploy/restart-haproxy.sh
+    - name: Reload haproxy
+      systemd:
+        name: haproxy
+        state: reloaded
