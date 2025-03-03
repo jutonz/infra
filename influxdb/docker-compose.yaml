@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  influxdb:
+    container_name: influxdb
+    image: influxdb:2.7-alpine
+    volumes:
+      - /home/jutonz/influxdb2/data:/var/lib/influxdb2
+    ports:
+      - 8086:8086
+    restart: always
