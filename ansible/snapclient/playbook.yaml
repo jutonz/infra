@@ -24,4 +24,4 @@
     - name: Start snapclient
       systemd:
         name: snapclient
-        state: started
+        state: restarted

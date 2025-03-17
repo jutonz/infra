@@ -1,0 +1,42 @@
+- name: Install snapserver w/ librespot
+  hosts: all
+  become: yes
+  vars:
+    # see https://github.com/badaix/snapcast/releases
+    version: "0.31.0"
+    arch: "amd64"
+  tasks:
+    - name: Install alsa-utils
+      apt:
+        name: alsa-utils
+        state: present
+
+    - name: Make snap pipe
+      command: mkfifo /run/snapfifo
+      args:
+        creates: /run/snapfifo
+
+    - name: Download snapserver .deb
+      get_url:
+        url: "https://github.com/badaix/snapcast/releases/download/v{{ version }}/snapserver_{{ version }}-1_{{ arch }}_bookworm.deb"
+        dest: "/tmp/snapserver_{{ version }}.deb"
+
+    - name: Install snapserver .deb
+      apt:
+        deb: "/tmp/snapserver_{{ version }}.deb"
+        state: present
+
+    - name: Copy snapserver defaults
+      copy:
+        src: ./files/snapserver
+        dest: /etc/default/snapserver
+
+    - name: Copy snapserver config
+      copy:
+        src: ./files/snapserver.conf
+        dest: /etc/snapserver.conf
+
+    - name: Start snapserver
+      systemd:
+        name: snapserver
+        state: restarted
