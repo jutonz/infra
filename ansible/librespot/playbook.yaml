@@ -1,0 +1,79 @@
+- name: Install librespot
+  hosts: all
+  become: yes
+  vars:
+    # see https://github.com/badaix/snapcast/releases
+    version: "0.31.0"
+  tasks:
+    - name: Install build-essential
+      apt:
+        name: build-essential
+        state: present
+
+    - name: Install pkg-config
+      apt:
+        name: pkg-config
+        state: present
+
+    - name: Install libasound2-dev
+      apt:
+        name: libasound2-dev
+        state: present
+
+    - name: Check if rustup is installed
+      shell: which rustup
+      register: rustup_check
+      ignore_errors: true
+
+    - name: Download rustup installation script
+      get_url:
+        url: https://sh.rustup.rs
+        dest: /tmp/rustup-init.sh
+        mode: '0755'
+      when: rustup_check != 0
+
+    - name: Run rustup installation script
+      shell: /tmp/rustup-init.sh -y
+      args:
+        creates: /root/.cargo/bin/rustc
+      when: rustup_check != 0
+
+    - name: Verify Rust installation
+      shell: source $HOME/.cargo/env && rustc --version
+      register: rustc_version
+      args:
+        executable: /bin/bash
+      when: rustup_check != 0
+
+    - name: Display Rust version
+      debug:
+        msg: "Rust version installed: {{ rustc_version.stdout }}"
+
+    - name: Check if librespot is installed
+      shell: which librespot
+      register: librespot_check
+      ignore_errors: true
+      args:
+        executable: /bin/bash
+
+    - name: Install librespot
+      shell: source $HOME/.cargo/env && cargo install librespot
+      args:
+        executable: /bin/bash
+      when: librespot_check != 0
+
+    - name: Copy init script
+      template:
+        src: ./files/librespot.service.j2
+        dest: /usr/lib/systemd/system/librespot.service
+      vars:
+        speaker_name: snapcast
+
+    - name: Reload systemd daemons
+      command: systemctl daemon-reload
+
+    - name: Enable and start service
+      systemd:
+        name: librespot
+        state: restarted
+        enabled: yes

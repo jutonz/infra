@@ -1,0 +1,17 @@
+[Unit]
+Description=Librespot (an open source Spotify client)
+Documentation=https://github.com/librespot-org/librespot
+Documentation=https://github.com/librespot-org/librespot/wiki/Options
+Wants=network.target sound.target
+After=network.target sound.target
+
+[Service]
+User=root
+DynamicUser=no
+SupplementaryGroups=audio
+Restart=always
+RestartSec=10
+ExecStart=/root/.cargo/bin/librespot --name="{{ speaker_name }}" --cache=/root/librespot-cache --backend=pipe --device=/run/snapfifo --initial-volume=100
+
+[Install]
+WantedBy=multi-user.target

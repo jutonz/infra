@@ -1,0 +1,5 @@
+all:
+  hosts:
+    mini:
+      ansible_host: mini.local
+      ansible_user: root
