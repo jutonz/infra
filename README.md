@@ -24,7 +24,7 @@ file which says which resources to apply.
 ### Secrets
 
 Secrets are mananaged using [Sops]. Files containing secret values must be
-edited with `sops edit <file>`.
+edited with `sops edit <file>`. __Do not edit sops-encrypted files any other way.__
 
 These files also require special handling when passing to `kubectl` since the
 secret values must first be decrypted. This can be done manully via:
@@ -42,6 +42,19 @@ through all serivces and apply defintions for all resources.
 
 [Sops]: https://github.com/getsops/sops
 [ksops]: https://github.com/viaduct-ai/kustomize-sops
+
+__Creating new secrets__
+
+Create the file as you normally would, then run this to encrypt it:
+
+```bash
+sops encrypt --encrypted-regex '^(data|stringData)$' --in-place path/to/file.yaml
+```
+
+The `--encrypted-regex` flag tells sops to only encrypt the `data` and
+`stringData` values, leaving the rest in plaintext. This makes these files
+easier to read in their encrypted state.
+
 
 ## Ansible
 
