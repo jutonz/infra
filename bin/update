@@ -8,3 +8,8 @@ kustomize build \
   --enable-exec \
   radicale \
 | kubectl apply -f -
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  homepage-rb/overlays/prod \
+| kubectl apply -f -
