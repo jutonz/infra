@@ -23,7 +23,7 @@ file which says which resources to apply.
 
 ### Secrets
 
-Secrets are mananaged using [Sops]. Files containing secret values must be
+Secrets are managed using [Sops]. Files containing secret values must be
 edited with `sops edit <file>`. __Do not edit sops-encrypted files any other way.__
 
 These files also require special handling when passing to `kubectl` since the
