@@ -11,7 +11,7 @@ DynamicUser=no
 SupplementaryGroups=audio
 Restart=always
 RestartSec=10
-ExecStart=/root/.cargo/bin/librespot --name="{{ speaker_name }}" --cache=/root/librespot-cache --backend=pipe --device=/run/snapfifo --initial-volume=100
+ExecStart=/root/.cargo/bin/librespot --name="{{ speaker_name }}" --cache=/root/librespot-cache --backend=pipe --device=/run/snapserver/snapfifo --initial-volume=100
 
 [Install]
 WantedBy=multi-user.target
