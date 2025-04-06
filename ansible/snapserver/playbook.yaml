@@ -11,10 +11,13 @@
         name: alsa-utils
         state: present
 
-    - name: Make snap pipe
-      command: mkfifo /run/snapfifo
-      args:
-        creates: /run/snapfifo
+    - name: Create /run/snapserver directory
+      file:
+        path: /run/snapserver
+        state: directory
+        owner: snapserver
+        group: snapserver
+        mode: '0755'
 
     - name: Download snapserver .deb
       get_url:
