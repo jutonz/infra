@@ -1,7 +1,11 @@
 all:
   hosts:
+    # NOTE: Run `snapclient -l` to find correct soundcard (-s) for each host.
     ttv:
-      ansible_host: ttv.local
+      ansible_host: ttv
       ansible_user: root
-      # NOTE: Run `snapclient -l` to find correct soundcard for each host.
-      soundcard: 6
+      clientOpts: --player=alsa -s6
+    speaker:
+      ansible_host: speaker
+      ansible_user: jutonz
+      clientOpts: -s3
