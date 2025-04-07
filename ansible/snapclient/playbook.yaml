@@ -2,30 +2,75 @@
   hosts: all
   become: yes
   vars:
-    # see https://github.com/badaix/snapcast/releases
+    # see https://github.com/badaix/snapcast/tags
     version: "0.31.0"
   tasks:
-    - name: Install alsa-utils
+    - name: Install dependencies
       apt:
-        name: alsa-utils
+        name:
+        - alsa-utils
+        - avahi-daemon
+        - build-essential
+        - cmake
+        - git
+        - libasound2-dev
+        - libavahi-client-dev
+        - libboost-all-dev
+        - libexpat1-dev
+        - libflac-dev
+        - libopus-dev
+        - libpulse-dev
+        - libsoxr-dev
+        - libssl-dev
+        - libvorbis-dev
+        - libvorbisidec-dev
         state: present
+        update_cache: true
 
-    - name: Download snapclient .deb
-      get_url:
-        url: "https://github.com/badaix/snapcast/releases/download/v{{ version }}/snapclient_{{ version }}-1_arm64_bookworm.deb"
-        dest: "/tmp/snapclient_{{ version }}.deb"
+    - name: Clone snapcast repo
+      git:
+        repo: https://github.com/badaix/snapcast.git
+        dest: /home/jutonz/code/badaix/snapcast
+        version: v{{ version }}
 
-    - name: Install snapclient .deb
-      apt:
-        deb: "/tmp/snapclient_{{ version }}.deb"
-        state: present
+    - name: Check if installed
+      shell: command -v snapclient && snapclient --version | grep -q "v{{ version }}"
+      register: installed_check
+      ignore_errors: true
+      changed_when: false
 
-    - name: Copy snapclient config
+    - name: Create build directory
+      file:
+        dest: /home/jutonz/code/badaix/snapcast/build
+        state: directory
+      when: installed_check.rc != 0
+
+    - name: Configure
+      command: cmake .. -DBUILD_SERVER=OFF
+      args:
+        chdir: /home/jutonz/code/badaix/snapcast/build
+      when: installed_check.rc != 0
+
+    - name: Compile
+      command: cmake --build .
+      args:
+        chdir: /home/jutonz/code/badaix/snapcast/build
+      when: installed_check.rc != 0
+
+    - name: Install binary
+      command: cp /home/jutonz/code/badaix/snapcast/bin/snapclient /usr/local/bin/snapclient
+      when: installed_check.rc != 0
+
+    - name: Setup service
       template:
-        src: ./default/snapclient.j2
-        dest: /etc/default/snapclient
+        src: ./files/snapclient.service.j2
+        dest: /usr/lib/systemd/system/snapclient.service
 
-    - name: Start snapclient
+    - name: Reload systemd daemons
+      command: systemctl daemon-reload
+
+    - name: Enable and start service
       systemd:
         name: snapclient
         state: restarted
+        enabled: yes

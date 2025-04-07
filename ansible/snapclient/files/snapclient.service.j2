@@ -1,0 +1,15 @@
+[Unit]
+Description=snapclient
+Wants=network.target sound.target
+After=network.target sound.target
+
+[Service]
+User=root
+DynamicUser=no
+SupplementaryGroups=audio
+Restart=always
+RestartSec=10
+ExecStart=/usr/local/bin/snapclient --host=192.168.1.94 {{ clientOpts }}
+
+[Install]
+WantedBy=multi-user.target
