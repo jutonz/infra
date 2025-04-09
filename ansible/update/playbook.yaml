@@ -1,0 +1,23 @@
+---
+- name: Update system packages
+  hosts: all
+  become: true
+  tasks:
+    - name: Run apt-get upgrade
+      ansible.builtin.apt:
+        upgrade: true
+        update_cache: true
+      register: upgrade_output
+
+    - name: Print upgrade output
+      ansible.builtin.debug:
+        var: upgrade_output.stdout_lines
+
+    - name: Run apt-get autoremove
+      ansible.builtin.apt:
+        autoremove: true
+      register: autoremove_output
+
+    - name: Print autoremove output
+      ansible.builtin.debug:
+        var: autoremove_output.stdout_lines

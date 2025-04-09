@@ -1,0 +1,17 @@
+all:
+  hosts:
+    mini:
+      ansible_host: mini.local
+      ansible_user: root
+    cary:
+      ansible_host: cary
+      ansible_user: root
+    ttv:
+      ansible_host: ttv
+      ansible_user: jutonz
+    littlebox:
+      ansible_host: littlebox.local
+      ansible_user: root
+    speaker:
+      ansible_host: speaker
+      ansible_user: jutonz
