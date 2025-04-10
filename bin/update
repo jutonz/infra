@@ -13,3 +13,4 @@ kustomize build \
   --enable-exec \
   homepage-rb/overlays/prod \
 | kubectl apply -f -
+kubectl apply -k grafana
