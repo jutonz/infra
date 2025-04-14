@@ -12,3 +12,4 @@ resources:
 - ./tempo-data-pvc.yaml
 - ./tempo-config-configmap.yaml
 - ./tempo-deployment.yaml
+- ./tempo-service.yaml

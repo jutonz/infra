@@ -18,6 +18,7 @@ data:
         otlp:
           protocols:
             grpc:
+              endpoint: "0.0.0.0:4417"
             http:
               endpoint: "0.0.0.0:4418"
 
