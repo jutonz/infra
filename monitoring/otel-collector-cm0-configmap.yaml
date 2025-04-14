@@ -1,0 +1,50 @@
+apiVersion: v1
+data:
+  otel-collector-config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          # grpc:
+          #   endpoint: "0.0.0.0:4317"
+          http:
+            endpoint: "0.0.0.0:4318"
+
+    exporters:
+      # https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md
+      debug:
+        verbosity: basic # basic, normal, detailed
+        use_internal_logger: false
+      prometheus:
+        endpoint: "0.0.0.0:8889"
+      prometheusremotewrite:
+        endpoint: http://localhost:9090/api/v1/write
+        # tls:
+        #   insecure: true
+        # namespace: homepagerb
+        target_info:
+          enabled: true
+
+    processors:
+      batch:
+
+    connectors:
+      # https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/connector/spanmetricsconnector/README.md
+      spanmetrics:
+        namespace: span.metrics
+        metrics_flush_interval: 5s
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          exporters: [spanmetrics]
+        metrics:
+          receivers: [otlp, spanmetrics]
+          exporters: [prometheus]
+kind: ConfigMap
+metadata:
+  annotations:
+    use-subpath: "true"
+  labels:
+    io.kompose.service: otel-collector
+  name: otel-collector-cm0
