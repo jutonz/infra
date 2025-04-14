@@ -9,3 +9,6 @@ resources:
 - ./otel-collector-config-configmap.yaml
 - ./otel-collector-deployment.yaml
 - ./otel-collector-service.yaml
+- ./tempo-data-pvc.yaml
+- ./tempo-config-configmap.yaml
+- ./tempo-deployment.yaml
