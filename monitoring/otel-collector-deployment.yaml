@@ -36,7 +36,7 @@ spec:
               protocol: TCP
           volumeMounts:
             - mountPath: /etc/otel-collector-config.yaml
-              name: otel-collector-cm0
+              name: otel-collector-config
               subPath: otel-collector-config.yaml
       restartPolicy: Always
       volumes:
@@ -44,5 +44,5 @@ spec:
             items:
               - key: otel-collector-config.yaml
                 path: otel-collector-config.yaml
-            name: otel-collector-cm0
-          name: otel-collector-cm0
+            name: otel-collector-config
+          name: otel-collector-config
