@@ -1,0 +1,14 @@
+[Unit]
+Description=node_exporter
+Wants=network.target
+After=network.target
+
+[Service]
+User=root
+DynamicUser=no
+Restart=always
+RestartSec=10
+ExecStart=/usr/local/bin/node_exporter {{ command_line_args }}
+
+[Install]
+WantedBy=multi-user.target

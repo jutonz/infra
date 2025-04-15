@@ -1,0 +1,18 @@
+all:
+  hosts:
+    mini:
+      ansible_host: mini
+      ansible_user: root
+      arch: amd64
+    littlebox:
+      ansible_host: littlebox.local
+      ansible_user: root
+      arch: amd64
+    ttv:
+      ansible_host: ttv
+      ansible_user: jutonz
+      arch: arm64
+    speaker:
+      ansible_host: speaker
+      ansible_user: jutonz
+      arch: armv6
