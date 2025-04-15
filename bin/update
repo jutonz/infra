@@ -3,19 +3,29 @@
 set -ex
 
 kubectl apply -k hello-world/overlays/prod
+
 kustomize build \
   --enable-alpha-plugins \
   --enable-exec \
   radicale \
 | kubectl apply -f -
+
 kustomize build \
   --enable-alpha-plugins \
   --enable-exec \
   homepage-rb/overlays/prod \
 | kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  homepage/overlays/prod \
+| kubectl apply -f -
+
 kustomize build \
   --enable-alpha-plugins \
   --enable-exec \
   grafana \
 | kubectl apply -f -
+
 kubectl apply -k monitoring
