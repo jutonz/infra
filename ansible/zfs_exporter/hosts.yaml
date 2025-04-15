@@ -1,0 +1,5 @@
+all:
+  hosts:
+    littlebox:
+      ansible_host: littlebox.local
+      ansible_user: root

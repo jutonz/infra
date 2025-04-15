@@ -21,3 +21,6 @@ data:
       - job_name: homepage-rb-exporter
         static_configs:
           - targets: ["prometheus-exporter.homepage-rb.svc.cluster.local:9394"]
+      - job_name: zfs_exporter
+        static_configs:
+          - targets: ["192.168.1.217:9134"]

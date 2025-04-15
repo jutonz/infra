@@ -1,0 +1,42 @@
+---
+- name: Install zfs_exporter
+  hosts: all
+  become: true
+  vars:
+    # https://github.com/pdf/zfs_exporter/releases
+    version: "2.3.6"
+    arch: amd64
+  tasks:
+    - name: Download binary
+      ansible.builtin.get_url:
+        url: https://github.com/pdf/zfs_exporter/releases/download/v{{ version }}/zfs_exporter-{{ version }}.linux-{{ arch }}.tar.gz
+        dest: /tmp/zfs-exporter-{{ version }}.tar.gz
+        mode: '0644'
+
+    - name: Extract binary
+      ansible.builtin.unarchive:
+        src: /tmp/zfs-exporter-{{ version }}.tar.gz
+        dest: /tmp
+        remote_src: true
+
+    - name: Put binary on path
+      ansible.builtin.copy:
+        src: /tmp/zfs_exporter-{{ version }}.linux-{{ arch }}/zfs_exporter
+        dest: /usr/local/bin/zfs_exporter
+        remote_src: true
+        mode: '0755'
+
+    - name: Install service
+      ansible.builtin.template:
+        src: ./files/zfs_exporter.service.j2
+        dest: /usr/lib/systemd/system/zfs_exporter.service
+        mode: '0644'
+      vars:
+        command_line_args: --web.listen-address=:9134
+
+    - name: Enable and start service
+      ansible.builtin.systemd:
+        name: zfs_exporter
+        state: restarted
+        enabled: true
+        daemon_reload: true
