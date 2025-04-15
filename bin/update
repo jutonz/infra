@@ -28,4 +28,8 @@ kustomize build \
   grafana \
 | kubectl apply -f -
 
-kubectl apply -k monitoring
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  monitoring \
+| kubectl apply -f -

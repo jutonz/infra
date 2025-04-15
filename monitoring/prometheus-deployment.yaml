@@ -32,11 +32,9 @@ spec:
             - mountPath: /etc/prometheus/prometheus.yml
               name: prometheus-config
               subPath: prometheus.yml
+              readOnly: true
       restartPolicy: Always
       volumes:
-        - configMap:
-            items:
-              - key: prometheus.yml
-                path: prometheus.yml
-            name: prometheus-config
-          name: prometheus-config
+        - name: prometheus-config
+          secret:
+            secretName: prometheus-config
