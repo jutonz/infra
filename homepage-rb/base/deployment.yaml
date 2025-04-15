@@ -25,6 +25,10 @@ spec:
           env:
             - name: PORT
               value: "3000"
+            - name: PROMETHEUS_EXPORTER_HOST
+              value: "prometheus-exporter"
+            - name: PROMETHEUS_EXPORTER_PORT
+              value: "9394"
             - name: RAILS_MASTER_KEY
               valueFrom:
                 secretKeyRef:
