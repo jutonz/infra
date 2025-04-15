@@ -1,0 +1,41 @@
+---
+- name: Install node_exporter
+  hosts: all
+  become: true
+  vars:
+    # https://github.com/prometheus/node_exporter/releases
+    version: "1.9.1"
+  tasks:
+    - name: Download binary
+      ansible.builtin.get_url:
+        url: https://github.com/prometheus/node_exporter/releases/download/v{{ version }}/node_exporter-{{ version }}.linux-{{ arch }}.tar.gz
+        dest: /tmp/node-exporter-{{ version }}.tar.gz
+        mode: '0644'
+
+    - name: Extract binary
+      ansible.builtin.unarchive:
+        src: /tmp/node-exporter-{{ version }}.tar.gz
+        dest: /tmp
+        remote_src: true
+
+    - name: Put binary on path
+      ansible.builtin.copy:
+        src: /tmp/node_exporter-{{ version }}.linux-{{ arch }}/node_exporter
+        dest: /usr/local/bin/node_exporter
+        remote_src: true
+        mode: '0755'
+
+    - name: Install service
+      ansible.builtin.template:
+        src: ./files/node_exporter.service.j2
+        dest: /usr/lib/systemd/system/node_exporter.service
+        mode: '0644'
+      vars:
+        command_line_args: --web.listen-address=:9100
+
+    - name: Enable and start service
+      ansible.builtin.systemd:
+        name: node_exporter
+        state: restarted
+        enabled: true
+        daemon_reload: true
