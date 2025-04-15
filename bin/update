@@ -13,5 +13,9 @@ kustomize build \
   --enable-exec \
   homepage-rb/overlays/prod \
 | kubectl apply -f -
-kubectl apply -k grafana
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  grafana \
+| kubectl apply -f -
 kubectl apply -k monitoring

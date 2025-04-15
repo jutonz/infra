@@ -25,8 +25,15 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/grafana
               name: data
+            - name: config
+              mountPath: /etc/grafana/grafana.ini
+              subPath: grafana.ini
+              readOnly: true
       restartPolicy: Always
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: data
+        - name: config
+          secret:
+            secretName: config
