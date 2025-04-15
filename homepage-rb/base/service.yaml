@@ -15,3 +15,17 @@ spec:
   type: LoadBalancer
   selector:
     io.kompose.service: web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: prometheus-exporter
+  name: prometheus-exporter
+spec:
+  ports:
+    - name: "9394"
+      port: 9394
+      targetPort: 9394
+  selector:
+    io.kompose.service: web

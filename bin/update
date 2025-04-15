@@ -14,3 +14,4 @@ kustomize build \
   homepage-rb/overlays/prod \
 | kubectl apply -f -
 kubectl apply -k grafana
+kubectl apply -k monitoring

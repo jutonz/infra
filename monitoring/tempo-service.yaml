@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: tempo
+  name: tempo
+spec:
+  type: LoadBalancer
+  ports:
+    - name: "3200"
+      port: 3200
+      targetPort: 3200
+    - name: "4417"
+      port: 4417
+      targetPort: 4417
+    - name: "4418"
+      port: 4418
+      targetPort: 4418
+  selector:
+    io.kompose.service: tempo
