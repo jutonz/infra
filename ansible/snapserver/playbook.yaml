@@ -24,6 +24,7 @@
       ansible.builtin.get_url:
         url: "https://github.com/badaix/snapcast/releases/download/v{{ version }}/snapserver_{{ version }}-1_{{ arch }}_bookworm.deb"
         dest: "/tmp/snapserver_{{ version }}.deb"
+        mode: "0644"
 
     - name: Install snapserver .deb
       ansible.builtin.apt:
@@ -34,11 +35,13 @@
       ansible.builtin.copy:
         src: ./files/snapserver
         dest: /etc/default/snapserver
+        mode: "0644"
 
     - name: Copy snapserver config
       ansible.builtin.copy:
         src: ./files/snapserver.conf
         dest: /etc/snapserver.conf
+        mode: "0644"
 
     - name: Start snapserver
       ansible.builtin.systemd:
