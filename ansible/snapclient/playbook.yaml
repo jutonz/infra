@@ -44,6 +44,7 @@
       ansible.builtin.file:
         dest: /home/jutonz/code/badaix/snapcast/build
         state: directory
+        mode: "0755"
       when: installed_check.rc != 0
 
     - name: Configure
@@ -51,26 +52,29 @@
       args:
         chdir: /home/jutonz/code/badaix/snapcast/build
       when: installed_check.rc != 0
+      changed_when: false
 
     - name: Compile
       ansible.builtin.command: cmake --build .
       args:
         chdir: /home/jutonz/code/badaix/snapcast/build
       when: installed_check.rc != 0
+      changed_when: false
 
     - name: Install binary
       ansible.builtin.command: cp /home/jutonz/code/badaix/snapcast/bin/snapclient /usr/local/bin/snapclient
       when: installed_check.rc != 0
+      changed_when: false
 
     - name: Setup service
       ansible.builtin.template:
         src: ./files/snapclient.service.j2
         dest: /usr/lib/systemd/system/snapclient.service
+        mode: "0644"
 
-    - name: Reload systemd daemons
-      ansible.builtin.command: systemctl daemon-reload
     - name: Enable and start service
       ansible.builtin.systemd:
         name: snapclient
         state: restarted
         enabled: true
+        daemon_reload: true
