@@ -13,11 +13,9 @@
         src: ./haproxy.cfg
         dest: /etc/haproxy/haproxy.cfg
         mode: "0644"
-      register: copy_haproxy_config
 
     - name: Verify config
       ansible.builtin.command: haproxy -f /etc/haproxy/haproxy.cfg -c
-      when: copy_haproxy_config.changed
       changed_when: false
 
     - name: Install letsencrypt hook
