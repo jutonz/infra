@@ -71,15 +71,13 @@
       ansible.builtin.template:
         src: ./files/librespot.service.j2
         dest: /usr/lib/systemd/system/librespot.service
+        mode: "0644"
       vars:
         speaker_name: snapcast
-
-    - name: Reload systemd daemons
-      ansible.builtin.command: systemctl daemon-reload
-      changed_when: false
 
     - name: Enable and start service
       ansible.builtin.systemd:
         name: librespot
         state: restarted
+        daemon_reload: true
         enabled: true
