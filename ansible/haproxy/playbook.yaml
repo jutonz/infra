@@ -1,24 +1,30 @@
+---
 - name: Ensure Haproxy is installed
   hosts: all
-  become: yes
+  become: true
   tasks:
     - name: Install Haproxy
-      apt:
+      ansible.builtin.apt:
         name: haproxy
         state: present
+
     - name: Copy file
-      copy:
+      ansible.builtin.copy:
         src: ./haproxy.cfg
         dest: /etc/haproxy/haproxy.cfg
-      register: copy_haproxy_config
+        mode: "0644"
+
     - name: Verify config
-      command: haproxy -f /etc/haproxy/haproxy.cfg -c
-      when: copy_haproxy_config.changed
+      ansible.builtin.command: haproxy -f /etc/haproxy/haproxy.cfg -c
+      changed_when: false
+
     - name: Install letsencrypt hook
-      copy:
+      ansible.builtin.copy:
         src: ./letsencrypt/renewal-hooks/deploy/restart-haproxy.sh
         dest: /etc/letsencrypt/renewal-hooks/deploy/restart-haproxy.sh
+        mode: "0755"
+
     - name: Reload haproxy
-      systemd:
+      ansible.builtin.systemd:
         name: haproxy
         state: reloaded

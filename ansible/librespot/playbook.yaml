@@ -1,3 +1,4 @@
+---
 - name: Install librespot
   hosts: all
   become: true
@@ -30,7 +31,7 @@
       ansible.builtin.get_url:
         url: https://sh.rustup.rs
         dest: /tmp/rustup-init.sh
-        mode: '0755'
+        mode: "0755"
       when: rustup_check != 0
 
     - name: Run rustup installation script
@@ -70,15 +71,13 @@
       ansible.builtin.template:
         src: ./files/librespot.service.j2
         dest: /usr/lib/systemd/system/librespot.service
+        mode: "0644"
       vars:
         speaker_name: snapcast
-
-    - name: Reload systemd daemons
-      ansible.builtin.command: systemctl daemon-reload
-      changed_when: false
 
     - name: Enable and start service
       ansible.builtin.systemd:
         name: librespot
         state: restarted
+        daemon_reload: true
         enabled: true

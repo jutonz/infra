@@ -11,7 +11,7 @@
       ansible.builtin.get_url:
         url: https://github.com/pdf/zfs_exporter/releases/download/v{{ version }}/zfs_exporter-{{ version }}.linux-{{ arch }}.tar.gz
         dest: /tmp/zfs-exporter-{{ version }}.tar.gz
-        mode: '0644'
+        mode: "0644"
 
     - name: Extract binary
       ansible.builtin.unarchive:
@@ -24,13 +24,13 @@
         src: /tmp/zfs_exporter-{{ version }}.linux-{{ arch }}/zfs_exporter
         dest: /usr/local/bin/zfs_exporter
         remote_src: true
-        mode: '0755'
+        mode: "0755"
 
     - name: Install service
       ansible.builtin.template:
         src: ./files/zfs_exporter.service.j2
         dest: /usr/lib/systemd/system/zfs_exporter.service
-        mode: '0644'
+        mode: "0644"
       vars:
         command_line_args: --web.listen-address=:9134
 
