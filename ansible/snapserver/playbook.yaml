@@ -1,45 +1,46 @@
+---
 - name: Install snapserver w/ librespot
   hosts: all
-  become: yes
+  become: true
   vars:
     # see https://github.com/badaix/snapcast/releases
     version: "0.31.0"
     arch: "amd64"
   tasks:
     - name: Install alsa-utils
-      apt:
+      ansible.builtin.apt:
         name: alsa-utils
         state: present
 
     - name: Create /run/snapserver directory
-      file:
+      ansible.builtin.file:
         path: /run/snapserver
         state: directory
         owner: snapserver
         group: snapserver
-        mode: '0755'
+        mode: "0755"
 
     - name: Download snapserver .deb
-      get_url:
+      ansible.builtin.get_url:
         url: "https://github.com/badaix/snapcast/releases/download/v{{ version }}/snapserver_{{ version }}-1_{{ arch }}_bookworm.deb"
         dest: "/tmp/snapserver_{{ version }}.deb"
 
     - name: Install snapserver .deb
-      apt:
+      ansible.builtin.apt:
         deb: "/tmp/snapserver_{{ version }}.deb"
         state: present
 
     - name: Copy snapserver defaults
-      copy:
+      ansible.builtin.copy:
         src: ./files/snapserver
         dest: /etc/default/snapserver
 
     - name: Copy snapserver config
-      copy:
+      ansible.builtin.copy:
         src: ./files/snapserver.conf
         dest: /etc/snapserver.conf
 
     - name: Start snapserver
-      systemd:
+      ansible.builtin.systemd:
         name: snapserver
         state: restarted

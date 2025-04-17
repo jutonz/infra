@@ -1,76 +1,76 @@
+---
 - name: Install snapclient
   hosts: all
-  become: yes
+  become: true
   vars:
     # see https://github.com/badaix/snapcast/tags
     version: "0.31.0"
   tasks:
     - name: Install dependencies
-      apt:
+      ansible.builtin.apt:
         name:
-        - alsa-utils
-        - avahi-daemon
-        - build-essential
-        - cmake
-        - git
-        - libasound2-dev
-        - libavahi-client-dev
-        - libboost-all-dev
-        - libexpat1-dev
-        - libflac-dev
-        - libopus-dev
-        - libpulse-dev
-        - libsoxr-dev
-        - libssl-dev
-        - libvorbis-dev
-        - libvorbisidec-dev
+          - alsa-utils
+          - avahi-daemon
+          - build-essential
+          - cmake
+          - git
+          - libasound2-dev
+          - libavahi-client-dev
+          - libboost-all-dev
+          - libexpat1-dev
+          - libflac-dev
+          - libopus-dev
+          - libpulse-dev
+          - libsoxr-dev
+          - libssl-dev
+          - libvorbis-dev
+          - libvorbisidec-dev
         state: present
         update_cache: true
 
     - name: Clone snapcast repo
-      git:
+      ansible.builtin.git:
         repo: https://github.com/badaix/snapcast.git
         dest: /home/jutonz/code/badaix/snapcast
         version: v{{ version }}
 
     - name: Check if installed
-      shell: command -v snapclient && snapclient --version | grep -q "v{{ version }}"
+      ansible.builtin.shell: command -v snapclient && snapclient --version | grep -q "v{{ version }}"
       register: installed_check
       ignore_errors: true
       changed_when: false
 
     - name: Create build directory
-      file:
+      ansible.builtin.file:
         dest: /home/jutonz/code/badaix/snapcast/build
         state: directory
       when: installed_check.rc != 0
 
     - name: Configure
-      command: cmake .. -DBUILD_SERVER=OFF
+      ansible.builtin.command: cmake .. -DBUILD_SERVER=OFF
       args:
         chdir: /home/jutonz/code/badaix/snapcast/build
       when: installed_check.rc != 0
 
     - name: Compile
-      command: cmake --build .
+      ansible.builtin.command: cmake --build .
       args:
         chdir: /home/jutonz/code/badaix/snapcast/build
       when: installed_check.rc != 0
 
     - name: Install binary
-      command: cp /home/jutonz/code/badaix/snapcast/bin/snapclient /usr/local/bin/snapclient
+      ansible.builtin.command: cp /home/jutonz/code/badaix/snapcast/bin/snapclient /usr/local/bin/snapclient
       when: installed_check.rc != 0
 
     - name: Setup service
-      template:
+      ansible.builtin.template:
         src: ./files/snapclient.service.j2
         dest: /usr/lib/systemd/system/snapclient.service
 
     - name: Reload systemd daemons
-      command: systemctl daemon-reload
-
+      ansible.builtin.command: systemctl daemon-reload
     - name: Enable and start service
-      systemd:
+      ansible.builtin.systemd:
         name: snapclient
         state: restarted
-        enabled: yes
+        enabled: true

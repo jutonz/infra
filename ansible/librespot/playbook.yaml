@@ -1,3 +1,4 @@
+---
 - name: Install librespot
   hosts: all
   become: true
@@ -30,7 +31,7 @@
       ansible.builtin.get_url:
         url: https://sh.rustup.rs
         dest: /tmp/rustup-init.sh
-        mode: '0755'
+        mode: "0755"
       when: rustup_check != 0
 
     - name: Run rustup installation script
