@@ -2,8 +2,6 @@
 
 set -ex
 
-kubectl apply -k hello-world/overlays/prod
-
 kustomize build \
   --enable-alpha-plugins \
   --enable-exec \
