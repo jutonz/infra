@@ -3,13 +3,14 @@ kind: Kustomization
 namespace: monitoring
 resources:
 - ./namespace.yaml
-- ./prometheus-deployment.yaml
-- ./prometheus-service.yaml
 - ./otel-collector-config-configmap.yaml
 - ./otel-collector-deployment.yaml
 - ./otel-collector-service.yaml
-- ./tempo-data-pvc.yaml
+- ./prometheus-data-pvc.yaml
+- ./prometheus-deployment.yaml
+- ./prometheus-service.yaml
 - ./tempo-config-configmap.yaml
+- ./tempo-data-pvc.yaml
 - ./tempo-deployment.yaml
 - ./tempo-service.yaml
 generators:
