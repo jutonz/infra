@@ -10,3 +10,7 @@ all:
       ansible_host: speaker
       ansible_user: jutonz
       clientOpts: -s3
+    speaker2:
+      ansible_host: speaker2
+      ansible_user: jutonz
+      clientOpts: -s3
