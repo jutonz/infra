@@ -107,4 +107,5 @@
           --expand \
           --dry-run \
           {% for domain in certbot_domains %}-d {{ domain }} {% endfor %}
-      changed_when: true
+      args:
+        creates: "/etc/haproxy/certs/app.jutonz.com.pem"

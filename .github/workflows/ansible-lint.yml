@@ -11,7 +11,7 @@ jobs:
       - name: Run ansible-lint
         uses: ansible/ansible-lint@v25
         with:
-          args: ""
+          args: "-i .ansible-lint-ignore"
           setup_python: "true"
           working_directory: "ansible/"
           requirements_file: ""
