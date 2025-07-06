@@ -3,28 +3,109 @@
   hosts: all
   become: true
   tasks:
+    - name: Install snapd
+      ansible.builtin.apt:
+        name: snapd
+        state: present
+        update_cache: true
+
+    - name: Ensure snap core is up to date
+      ansible.builtin.command: snap install core
+      register: core_snap
+      changed_when: "'already installed' not in core_snap.stdout"
+
+    - name: Refresh core snap
+      ansible.builtin.command: snap refresh core
+      changed_when: false
+
+    - name: Install certbot via snap
+      ansible.builtin.command: snap install --classic certbot
+      args:
+        creates: /snap/bin/certbot
+
+    - name: Ensure certbot symlink exists
+      ansible.builtin.file:
+        src: /snap/bin/certbot
+        dest: /usr/bin/certbot
+        state: link
+        force: true
+
+    - name: Create hooks directory
+      ansible.builtin.file:
+        path: /etc/letsencrypt/renewal-hooks/deploy
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Install haproxy hook
+      ansible.builtin.copy:
+        src: ./letsencrypt/renewal-hooks/deploy/restart-haproxy.sh
+        dest: /etc/letsencrypt/renewal-hooks/deploy/restart-haproxy.sh
+        mode: "0755"
+
     - name: Install Haproxy
       ansible.builtin.apt:
         name: haproxy
         state: present
 
-    - name: Copy file
+    - name: Create empty certs dir
+      ansible.builtin.file:
+        path: /etc/haproxy/certs
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Generate self-signed cert so haproxy can start
+      ansible.builtin.shell: |
+        openssl req -x509 -nodes -newkey rsa:2048 \
+          -keyout "/tmp/dummy.jutonz.com.key" \
+          -out "/tmp/dummy.jutonz.com.crt" \
+          -days 1 \
+          -subj "/CN=dummy.jutonz.com"
+      args:
+        creates: "/tmp/dummy.jutonz.com.crt"
+
+    - name: Create combined .pem file
+      ansible.builtin.shell: |
+        cat "/tmp/dummy.jutonz.com.crt" "/tmp/dummy.jutonz.com.key" > "/etc/haproxy/certs/dummy.jutonz.com.pem"
+      args:
+        creates: "/etc/haproxy/certs/dummy.jutonz.com.pem"
+
+    - name: Ensure correct permissions on .pem file
+      ansible.builtin.file:
+        path: /etc/haproxy/certs/dummy.jutonz.com.pem
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Install config file
       ansible.builtin.copy:
         src: ./haproxy.cfg
         dest: /etc/haproxy/haproxy.cfg
         mode: "0644"
 
     - name: Verify config
-      ansible.builtin.command: haproxy -f /etc/haproxy/haproxy.cfg -c
+      ansible.builtin.command: /usr/sbin/haproxy -f /etc/haproxy/haproxy.cfg -c
       changed_when: false
-
-    - name: Install letsencrypt hook
-      ansible.builtin.copy:
-        src: ./letsencrypt/renewal-hooks/deploy/restart-haproxy.sh
-        dest: /etc/letsencrypt/renewal-hooks/deploy/restart-haproxy.sh
-        mode: "0755"
 
     - name: Reload haproxy
       ansible.builtin.systemd:
         name: haproxy
         state: reloaded
+
+    - name: Install certificates
+      ansible.builtin.shell: |
+        certbot certonly \
+          --standalone \
+          --http-01-port=8888 \
+          --non-interactive \
+          --agree-tos \
+          --email={{ letsencrypt_email }} \
+          --deploy-hook "/etc/letsencrypt/renewal-hooks/deploy/restart-haproxy.sh" \
+          --expand \
+          --dry-run \
+          {% for domain in certbot_domains %}-d {{ domain }} {% endfor %}
+      args:
+        creates: "/etc/haproxy/certs/app.jutonz.com.pem"

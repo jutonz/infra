@@ -1,6 +1,28 @@
----
 all:
-  hosts:
-    littlebox:
-      ansible_host: littlebox.local
-      ansible_user: root
+    hosts:
+        mini:
+            ansible_host: mini
+            ansible_user: root
+            letsencrypt_email: ENC[AES256_GCM,data:L5ZbXmZb5mVLMN+F+wey0ja9c8G3l1MsJI9GR2XJW5Oy,iv:5vXr5VxU1XZj++0/Df6BUhsL3e5NZPGPvjMdyz3QagM=,tag:KIsOf3zbYlzSJC2srQvXng==,type:str]
+            certbot_domains:
+                - ENC[AES256_GCM,data:dZRK8sOWRcbL8dzC1Jk=,iv:S1rbiTbEaFDQYyPK5gNROw8/5h6epkz2pvudFL1D9UA=,tag:QXODGRiKg8/2EeobTsqfUg==,type:str]
+                - ENC[AES256_GCM,data:fSNY5HtNIWu7M0NgYVj6iwO3sdZiAo8=,iv:C03yAcxYOUs7tXot4i21e/BSPYCexBkkPu8KX3cCH90=,tag:OuUNu3NqMruL+OPxuXUtHA==,type:str]
+                - ENC[AES256_GCM,data:WchpuDDps872WKDOv0qELkT5Sw==,iv:KSsNxuJkuys48Bsny3sWjJ6xkBn+mv2b5EsHrAraPj0=,tag:+jPEN3HgMXy28q2CEiLnbQ==,type:str]
+                - ENC[AES256_GCM,data:zd2jKPDbNaBeXMIbssbU,iv:ak8pVs5HB2dcz7NqiK261mks8Ua12KgCXtUrlkkiwMM=,tag:bWV0sQEpXOYf3Wyt7hIMyA==,type:str]
+                - ENC[AES256_GCM,data:zOeLcS0zTkIU5g==,iv:MqbQROMuqblIeHaK/D9UFuP4HYVD7EnFgyG34AJLN5M=,tag:NYzZcAsMTXO/DFI8zPglZQ==,type:str]
+                - ENC[AES256_GCM,data:AW61IBeZMj3RKzxr3kfKAafrUXcEqmVEutc=,iv:NlFtQmwkdBjZu9uDIaxfCRiTvlrMASKvEGeF6eDF6Ds=,tag:tf0lV48VlAUktJ50sZJTJg==,type:str]
+sops:
+    age:
+        - recipient: age1fs9c9xejszarcv6c3r62efnkny06yvl6zgjlhemmyvyd2t8zq40sqtnpvg
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBEMEtGMU93TFFyOCthcFhY
+            a29YYTlCTnVtdUpjM2x0RExsVGQxdjhONGx3Cm5TbGRsSjdIVzBBbFAraG9BZWNs
+            Nkl6OWhUbW5uaWJJeW52eTFwL3p1Q28KLS0tIHNxODNuemhRTGxNSlhrOE1hWTY2
+            VkdOL3pyV2loVHMwa0tXRWpGVGtqUlEK5GxPsA3U4WMPe49QxzBawa1q2mzuVDyD
+            VqGz49gwVqKqYmTK3+SeVRzTrKSaJ4+cNUJKuh5oc0fVNlJMQDDrfw==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2025-07-06T17:15:49Z"
+    mac: ENC[AES256_GCM,data:OgTQb5Pr7TX/4R9H48D/FXsJQurv1ezxW2q3i1yM4pXRkTromXfGfuL58UcdLScDaOAW4izpSF8gJ1jFY0Aj2RT+lk6QAnLnnXsAlkbDJ79aTTieCc6f1B3ccKKzNKSGbuCJFORflsGCVsqOmG1B9nVPMIrEvmgOXJ97WVdEUDg=,iv:9gyW5n7X6AoMjSZI9dk/MU2fshCDjW6PH6Ig7cHvSOE=,tag:+sNI33npAmavybpto/7wgg==,type:str]
+    encrypted_regex: ^(letsencrypt_email|certbot_domains)$
+    version: 3.10.2
