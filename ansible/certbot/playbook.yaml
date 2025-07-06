@@ -1,0 +1,31 @@
+---
+- name: Install Certbot
+  hosts: all
+  become: true
+  tasks:
+    - name: Install snapd
+      ansible.builtin.apt:
+        name: snapd
+        state: present
+        update_cache: true
+
+    - name: Ensure snap core is up to date
+      ansible.builtin.command: snap install core
+      register: core_snap
+      changed_when: "'already installed' not in core_snap.stdout"
+
+    - name: Refresh core snap
+      ansible.builtin.command: snap refresh core
+      changed_when: true
+
+    - name: Install certbot via snap
+      ansible.builtin.command: snap install --classic certbot
+      args:
+        creates: /snap/bin/certbot
+
+    - name: Ensure certbot symlink exists
+      ansible.builtin.file:
+        src: /snap/bin/certbot
+        dest: /usr/bin/certbot
+        state: link
+        force: true
