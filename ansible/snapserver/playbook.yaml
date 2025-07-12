@@ -47,3 +47,51 @@
       ansible.builtin.systemd:
         name: snapserver
         state: restarted
+
+    - name: Copy metrics script
+      ansible.builtin.copy:
+        src: ./files/metrics.rb
+        dest: /etc/snapserver/metrics.rb
+        mode: "0644"
+
+    - name: Install ruby
+      ansible.builtin.apt:
+        name: ruby
+        state: present
+
+    - name: Create metrics service file
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/snapserver_metrics.service
+        content: |
+          [Unit]
+          Description=Report snapserver metrics to prometheus
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/bin/ruby /etc/snapserver/metrics.rb
+          User=root
+          Group=root
+        mode: "0644"
+
+    - name: Create systemd timer file
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/snapserver_metrics.timer
+        content: |
+          [Unit]
+          Description=Timer to run snapserver metrics
+
+          [Timer]
+          OnCalendar=*-*-* *:*:00
+          Unit=snapserver_metrics.service
+          Persistent=true
+
+          [Install]
+          WantedBy=timers.target
+        mode: "0644"
+
+    - name: Enable and start metrics service
+      ansible.builtin.systemd:
+        name: snapserver_metrics.timer
+        state: started
+        daemon_reload: true
+        enabled: true
