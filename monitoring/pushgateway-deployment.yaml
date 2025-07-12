@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: pushgateway
+  name: pushgateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: pushgateway
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: pushgateway
+    spec:
+      containers:
+        - image: prom/pushgateway:v1.11.1
+          name: pushgateway
+          ports:
+            - containerPort: 9091
+              protocol: TCP
+      restartPolicy: Always

@@ -9,6 +9,8 @@ resources:
 - ./prometheus-data-pvc.yaml
 - ./prometheus-deployment.yaml
 - ./prometheus-service.yaml
+- ./pushgateway-deployment.yaml
+- ./pushgateway-service.yaml
 - ./tempo-config-configmap.yaml
 - ./tempo-data-pvc.yaml
 - ./tempo-deployment.yaml
