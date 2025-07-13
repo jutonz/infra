@@ -49,7 +49,7 @@ class Metrics
   end
 
   def self.format_labels(labels_hash)
-    pairs = labels_hash.map { |k, v| "#{k}=\"#{v}\"" }
+    pairs = labels_hash.reject { |_, v| v.nil? }.map { |k, v| "#{k}=\"#{v}\"" }
     "{#{pairs.join(",")}}"
   end
 end
