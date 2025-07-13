@@ -5,12 +5,17 @@ require "uri"
 require "json"
 
 class Metrics
+  SNAPSERVER_HOST = "http://192.168.1.94:1780"
+  PUSHGATEWAY_HOST = "http://192.168.1.94:9091"
+
   def self.call
-    fetch_clients.each { |client| report_client(client) }
+    fetch_clients
+      .map { |client| Thread.new { report_client(client) } }
+      .each(&:join)
   end
 
   def self.fetch_clients
-    uri = URI("http://192.168.1.94:1780/jsonrpc")
+    uri = URI("#{SNAPSERVER_HOST}/jsonrpc")
     data = {id: 0, jsonrpc: "2.0", method: "Server.GetStatus"}.to_json
     resp = Net::HTTP.post(uri, data)
 
@@ -20,12 +25,15 @@ class Metrics
       .flat_map { |r| r["clients"] }
   end
 
+  JOB = "snapclient"
   def self.report_client(client)
-    job = "snapclient"
     instance = client["id"]
-    uri = URI("http://192.168.1.94:9091/metrics/job/#{job}/instance/#{instance}")
+    uri = URI("#{PUSHGATEWAY_HOST}/metrics/job/#{JOB}/instance/#{instance}")
 
-    labels = "{hostname=\"#{client.dig("host", "name")}\"}"
+    labels = format_labels({
+      hostname: client.dig("host", "name"),
+      ip: client.dig("host", "ip")
+    })
 
     body = <<~BODY
       snapclient_connected#{labels} #{(client["connected"] == "true") ? 1 : 0}
@@ -38,6 +46,11 @@ class Metrics
     puts "push response code: #{resp.code} #{resp.body}"
 
     pp client
+  end
+
+  def self.format_labels(labels_hash)
+    pairs = labels_hash.map { |k, v| "#{k}=\"#{v}\"" }
+    "{#{pairs.join(",")}}"
   end
 end
 
