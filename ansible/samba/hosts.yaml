@@ -1,0 +1,6 @@
+---
+all:
+  hosts:
+    cary:
+      ansible_host: cary
+      ansible_user: root

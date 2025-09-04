@@ -1,0 +1,75 @@
+---
+- name: Configure Samba
+  hosts: all
+  become: true
+  vars:
+    samba_share_name: "shared"
+    samba_share_path: "/srv/samba/{{ samba_share_name }}"
+    samba_share_comment: "Shared Folder"
+    samba_users:
+      - name: qbt
+        password: "{{ lookup('env', 'QBT_SAMBA_PASSWORD') }}"
+        groups: ["qbt", "qbt_samba"]
+  tasks:
+    - name: Install Samba packages
+      ansible.builtin.package:
+        name:
+          - samba
+          - samba-common
+          - samba-client
+        state: present
+
+    - name: Create qbt_samba group
+      ansible.builtin.group:
+        name: qbt_samba
+        state: present
+
+    - name: Create Samba users
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        state: present
+        groups: "{{ item.groups }}"
+        append: false
+      loop: "{{ samba_users }}"
+      no_log: true
+
+    - name: Set Samba user passwords
+      ansible.builtin.shell: |
+        set -o pipefail
+        (echo '{{ item.password }}'; echo '{{ item.password }}') | smbpasswd -s -a {{ item.name }}
+      args:
+        executable: /bin/bash
+      loop: "{{ samba_users }}"
+      no_log: true
+      changed_when: false
+
+    - name: Create qbt share directory
+      ansible.builtin.file:
+        path: "/srv/samba/qbt"
+        state: directory
+        mode: "0755"
+        owner: "qbt"
+        group: "qbt_samba"
+
+    - name: Configure Samba
+      ansible.builtin.template:
+        src: files/smb.conf.j2
+        dest: /etc/samba/smb.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart samba
+      vars:
+        workgroup: "WORKGROUP"
+
+    - name: Ensure Samba service is enabled and running
+      ansible.builtin.systemd:
+        name: smbd
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart samba
+      ansible.builtin.systemd:
+        name: smbd
+        state: restarted
