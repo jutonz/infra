@@ -6,10 +6,40 @@
     samba_share_name: "shared"
     samba_share_path: "/srv/samba/{{ samba_share_name }}"
     samba_share_comment: "Shared Folder"
+    user_groups:
+      - name: qbt_samba
+        gid: 1500
+      - name: qbt
+        gid: 1400
+      - name: sonarr
+        gid: 1401
+      - name: radarr
+        gid: 1402
+      - name: plex
+        gid: 1403
+      - name: bazarr
+        gid: 1404
     samba_users:
       - name: qbt
-        password: "{{ lookup('env', 'QBT_SAMBA_PASSWORD') }}"
+        password: "{{ lookup('env', 'SAMBA_PASSWORD_QBT') }}"
+        uid: 1400
         groups: ["qbt", "qbt_samba"]
+      - name: sonarr
+        password: "{{ lookup('env', 'SAMBA_PASSWORD_SONARR') }}"
+        uid: 1401
+        groups: ["sonarr", "qbt_samba"]
+      - name: radarr
+        password: "{{ lookup('env', 'SAMBA_PASSWORD_RADARR') }}"
+        uid: 1402
+        groups: ["radarr", "qbt_samba"]
+      - name: plex
+        password: "{{ lookup('env', 'SAMBA_PASSWORD_PLEX') }}"
+        uid: 1403
+        groups: ["plex", "qbt_samba"]
+      - name: bazarr
+        password: "{{ lookup('env', 'SAMBA_PASSWORD_BAZARR') }}"
+        uid: 1404
+        groups: ["bazarr", "qbt_samba"]
   tasks:
     - name: Install Samba packages
       ansible.builtin.package:
@@ -19,19 +49,21 @@
           - samba-client
         state: present
 
-    - name: Create qbt_samba group
+    - name: Create groups
       ansible.builtin.group:
-        name: qbt_samba
+        name: "{{ item.name }}"
+        gid: "{{ item.gid }}"
         state: present
+      loop: "{{ user_groups }}"
 
     - name: Create Samba users
       ansible.builtin.user:
         name: "{{ item.name }}"
         state: present
         groups: "{{ item.groups }}"
+        uid: "{{ item.uid }}"
         append: false
       loop: "{{ samba_users }}"
-      no_log: true
 
     - name: Set Samba user passwords
       ansible.builtin.shell: |
@@ -40,16 +72,15 @@
       args:
         executable: /bin/bash
       loop: "{{ samba_users }}"
-      no_log: true
       changed_when: false
 
-    - name: Create qbt share directory
-      ansible.builtin.file:
-        path: "/srv/samba/qbt"
-        state: directory
-        mode: "0755"
-        owner: "qbt"
-        group: "qbt_samba"
+    # - name: Create qbt share directory
+    #   ansible.builtin.file:
+    #     path: "/srv/samba/qbt"
+    #     state: directory
+    #     mode: "0755"
+    #     owner: "qbt"
+    #     group: "qbt_samba"
 
     - name: Configure Samba
       ansible.builtin.template:
