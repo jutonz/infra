@@ -18,7 +18,8 @@ file which says which resources to apply.
 
 1. Install and setup [direnv](https://github.com/direnv/direnv)
 2. `brew install sops`
-3. Install [ksops](https://github.com/viaduct-ai/kustomize-sops?tab=readme-ov-file#installation)
+3. `brew install kustomize`
+4. Install [ksops](https://github.com/viaduct-ai/kustomize-sops?tab=readme-ov-file#installation)
 
 
 ### Secrets

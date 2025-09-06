@@ -1,6 +1,6 @@
 ---
 all:
   hosts:
-    cary:
-      ansible_host: cary
+    mini:
+      ansible_host: mini
       ansible_user: root

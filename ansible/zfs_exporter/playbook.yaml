@@ -4,7 +4,7 @@
   become: true
   vars:
     # https://github.com/pdf/zfs_exporter/releases
-    version: "2.3.6"
+    version: "2.3.10"
     arch: amd64
   tasks:
     - name: Download binary
