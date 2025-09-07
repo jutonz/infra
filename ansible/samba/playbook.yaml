@@ -25,27 +25,27 @@
         gid: 1601
     samba_users:
       - name: qbt
-        password: "{{ lookup('env', 'SAMBA_PASSWORD_QBT') }}"
+        password: "{{ lookup('community.general.onepassword', 'samba qbt', field='password', vault='Infra') }}"
         uid: 1400
         groups: ["qbt", "qbt_samba"]
       - name: sonarr
-        password: "{{ lookup('env', 'SAMBA_PASSWORD_SONARR') }}"
+        password: "{{ lookup('community.general.onepassword', 'samba sonarr', field='password', vault='Infra') }}"
         uid: 1401
         groups: ["sonarr", "qbt_samba"]
       - name: radarr
-        password: "{{ lookup('env', 'SAMBA_PASSWORD_RADARR') }}"
+        password: "{{ lookup('community.general.onepassword', 'samba radarr', field='password', vault='Infra') }}"
         uid: 1402
         groups: ["radarr", "qbt_samba"]
       - name: plex
-        password: "{{ lookup('env', 'SAMBA_PASSWORD_PLEX') }}"
+        password: "{{ lookup('community.general.onepassword', 'samba plex', field='password', vault='Infra') }}"
         uid: 1403
         groups: ["plex", "qbt_samba"]
       - name: bazarr
-        password: "{{ lookup('env', 'SAMBA_PASSWORD_BAZARR') }}"
+        password: "{{ lookup('community.general.onepassword', 'samba bazarr', field='password', vault='Infra') }}"
         uid: 1404
         groups: ["bazarr", "qbt_samba"]
       - name: carolyn
-        password: "{{ lookup('env', 'SAMBA_PASSWORD_CAROLYN') }}"
+        password: "{{ lookup('community.general.onepassword', 'Carolyn file backup', field='password', vault='CJ Shared') }}"
         uid: 1601
         groups: ["carolyn", "cj", "qbt_samba"]
   tasks:
@@ -96,7 +96,7 @@
         executable: /bin/bash
       changed_when: false
       vars:
-        password: "{{ lookup('env', 'SAMBA_PASSWORD_JUTONZ') }}"
+        password: "{{ lookup('community.general.onepassword', 'samba jutonz', field='password', vault='Infra') }}"
 
     # - name: Create qbt share directory
     #   ansible.builtin.file:
