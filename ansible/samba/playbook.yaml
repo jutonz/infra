@@ -19,6 +19,10 @@
         gid: 1403
       - name: bazarr
         gid: 1404
+      - name: cj
+        gid: 1600
+      - name: carolyn
+        gid: 1601
     samba_users:
       - name: qbt
         password: "{{ lookup('env', 'SAMBA_PASSWORD_QBT') }}"
@@ -40,6 +44,10 @@
         password: "{{ lookup('env', 'SAMBA_PASSWORD_BAZARR') }}"
         uid: 1404
         groups: ["bazarr", "qbt_samba"]
+      - name: carolyn
+        password: "{{ lookup('env', 'SAMBA_PASSWORD_CAROLYN') }}"
+        uid: 1601
+        groups: ["carolyn", "cj", "qbt_samba"]
   tasks:
     - name: Install Samba packages
       ansible.builtin.package:
@@ -55,6 +63,12 @@
         gid: "{{ item.gid }}"
         state: present
       loop: "{{ user_groups }}"
+
+    - name: Add jutonz to groups
+      ansible.builtin.user:
+        name: jutonz
+        groups: ["cj", "qbt_samba"]
+        append: true
 
     - name: Create Samba users
       ansible.builtin.user:
@@ -73,6 +87,16 @@
         executable: /bin/bash
       loop: "{{ samba_users }}"
       changed_when: false
+
+    - name: Set Samba user password for jutonz
+      ansible.builtin.shell: |
+        set -o pipefail
+        (echo '{{ password }}'; echo '{{ password }}') | smbpasswd -s -a jutonz
+      args:
+        executable: /bin/bash
+      changed_when: false
+      vars:
+        password: "{{ lookup('env', 'SAMBA_PASSWORD_JUTONZ') }}"
 
     # - name: Create qbt share directory
     #   ansible.builtin.file:
