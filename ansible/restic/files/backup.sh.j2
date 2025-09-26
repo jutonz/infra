@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# /home/jutonz/docker/backup.sh
+
+export AWS_ACCESS_KEY_ID={{aws_access_key_id}}
+export AWS_SECRET_ACCESS_KEY={{aws_secret_access_key}}
+export RESTIC_PASSWORD={{restic_password}}
+export RESTIC_REPOSITORY={{restic_repository}}
+
+set -ex
+
+date
+
+/usr/local/bin/restic \
+  --verbose \
+{% for path in exclude_paths %}
+  --exclude {{ path }} \
+{% endfor %}
+  backup /home/jutonz/docker
+
+/usr/local/bin/restic \
+  forget \
+  --host={{hostname }} \
+  --keep-daily=1 \
+  --keep-weekly=1 \
+  --keep-monthly=1 \
+  --keep-yearly=1 \
+  --prune
+
+/usr/local/bin/restic snapshots
