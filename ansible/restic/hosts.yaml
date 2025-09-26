@@ -4,13 +4,19 @@ all:
     littlebox:
       ansible_host: littlebox
       ansible_user: root
+      arch: amd64
+      hostname: littlebox
       exclude_paths: []
     cary:
       ansible_host: cary
       ansible_user: root
+      arch: amd64
+      hostname: cary
       exclude_paths:
         - data/
     mini:
       ansible_host: mini
       ansible_user: root
+      arch: amd64
+      hostname: mini
       exclude_paths: []

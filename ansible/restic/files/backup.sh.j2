@@ -11,19 +11,20 @@ set -ex
 
 date
 
-restic \
+/usr/local/bin/restic \
   --verbose \
 {% for path in exclude_paths %}
   --exclude {{ path }} \
 {% endfor %}
   backup /home/jutonz/docker
 
-restic \
+/usr/local/bin/restic \
   forget \
+  --host={{hostname }} \
   --keep-daily=1 \
   --keep-weekly=1 \
   --keep-monthly=1 \
   --keep-yearly=1 \
   --prune
 
-restic snapshots
+/usr/local/bin/restic snapshots
