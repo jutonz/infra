@@ -22,6 +22,7 @@
     - name: Extract binary
       ansible.builtin.command:
         cmd: bunzip2 -f /tmp/restic-{{ version }}.bz2
+      changed_when: false
 
     - name: Put binary on path
       ansible.builtin.copy:
@@ -39,10 +40,38 @@
         group: root
         mode: "0644"
       vars:
-        aws_access_key_id: "{{ lookup('community.general.onepassword', 'minio docker backup script', field='access key id', account_id='BUEIPQKXV5APLFA6R6AGR34NZ4', vault='Infra') }}"
-        aws_secret_access_key: "{{ lookup('community.general.onepassword', 'minio docker backup script', field='secret access key', account_id='BUEIPQKXV5APLFA6R6AGR34NZ4', vault='Infra') }}"
-        restic_password: "{{ lookup('community.general.onepassword', 'restic', field='password', account_id='BUEIPQKXV5APLFA6R6AGR34NZ4', vault='Infra') }}"
-        restic_repository: "{{ lookup('community.general.onepassword', 'restic', field='docker backups repo', account_id='BUEIPQKXV5APLFA6R6AGR34NZ4', vault='Infra') }}"
+        aws_access_key_id: >-
+          {{ lookup(
+              'community.general.onepassword',
+              'minio docker backup script',
+              field='access key id',
+              account_id='BUEIPQKXV5APLFA6R6AGR34NZ4',
+              vault='Infra'
+          ) }}
+        aws_secret_access_key: >-
+          {{ lookup(
+              'community.general.onepassword',
+              'minio docker backup script',
+              field='secret access key',
+              account_id='BUEIPQKXV5APLFA6R6AGR34NZ4',
+              vault='Infra'
+          ) }}
+        restic_password: >-
+          {{ lookup(
+              'community.general.onepassword',
+              'restic',
+              field='password',
+              account_id='BUEIPQKXV5APLFA6R6AGR34NZ4',
+              vault='Infra'
+          ) }}
+        restic_repository: >-
+          {{ lookup(
+              'community.general.onepassword',
+              'restic',
+              field='docker backups repo',
+              account_id='BUEIPQKXV5APLFA6R6AGR34NZ4',
+              vault='Infra'
+          ) }}
 
     - name: Install cron job
       ansible.builtin.cron:
