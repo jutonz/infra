@@ -1,0 +1,35 @@
+---
+- name: Install restic for backups
+  hosts: all
+  become: true
+  vars:
+    # see https://github.com/restic/restic/releases
+    version: "0.18.1"
+  tasks:
+    - name: Install restic package
+      ansible.builtin.package:
+        name:
+          - restic
+        state: present
+
+    # NOTE: Repository must already have been initialized
+    - name: Add backup script
+      ansible.builtin.template:
+        src: files/backup.sh.j2
+        dest: /home/jutonz/docker/backup.sh
+        owner: root
+        group: root
+        mode: "0644"
+      vars:
+        aws_access_key_id: "{{ lookup('community.general.onepassword', 'minio docker backup script', field='access key id', account_id='BUEIPQKXV5APLFA6R6AGR34NZ4', vault='Infra') }}"
+        aws_secret_access_key: "{{ lookup('community.general.onepassword', 'minio docker backup script', field='secret access key', account_id='BUEIPQKXV5APLFA6R6AGR34NZ4', vault='Infra') }}"
+        restic_password: "{{ lookup('community.general.onepassword', 'restic', field='password', account_id='BUEIPQKXV5APLFA6R6AGR34NZ4', vault='Infra') }}"
+        restic_repository: "{{ lookup('community.general.onepassword', 'restic', field='docker backups repo', account_id='BUEIPQKXV5APLFA6R6AGR34NZ4', vault='Infra') }}"
+
+    - name: Install cron job
+      ansible.builtin.cron:
+        name: "Restic backup"
+        user: root
+        minute: "0"
+        hour: "6"
+        job: "/bin/bash /home/jutonz/docker/backup.sh > /home/jutonz/docker/backup_out.txt 2>&1"

@@ -1,0 +1,16 @@
+---
+all:
+  hosts:
+    littlebox:
+      ansible_host: littlebox
+      ansible_user: root
+      exclude_paths: []
+    cary:
+      ansible_host: cary
+      ansible_user: root
+      exclude_paths:
+        - data/
+    mini:
+      ansible_host: mini
+      ansible_user: root
+      exclude_paths: []
