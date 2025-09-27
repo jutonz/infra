@@ -16,7 +16,8 @@ date
 {% for path in exclude_paths %}
   --exclude {{ path }} \
 {% endfor %}
-  backup /home/jutonz/docker
+  backup /home/jutonz/docker \
+  --exclude-caches
 
 /usr/local/bin/restic \
   forget \
