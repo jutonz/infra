@@ -5,6 +5,8 @@
   vars:
     # see https://github.com/restic/restic/releases
     version: "0.18.1"
+    backup_start_hour: 6
+    backup_hour: "{{ backup_start_hour | int + (ansible_play_hosts.index(inventory_hostname) | int) }}"
   tasks:
     - name: Install packages
       ansible.builtin.package:
@@ -78,5 +80,5 @@
         name: "Restic backup"
         user: root
         minute: "0"
-        hour: "6"
+        hour: "{{ backup_hour }}"
         job: "/bin/bash /home/jutonz/docker/backup.sh > /home/jutonz/docker/backup_out.txt 2>&1"
