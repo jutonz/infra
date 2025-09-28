@@ -8,7 +8,7 @@ User=root
 DynamicUser=no
 Restart=always
 RestartSec=10
-ExecStart=/usr/local/bin/node_exporter {{ command_line_args }}
+ExecStart=/usr/local/bin/node_exporter {{ command_line_args | join(' ') }}
 
 [Install]
 WantedBy=multi-user.target
