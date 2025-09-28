@@ -31,7 +31,8 @@
         dest: /usr/lib/systemd/system/node_exporter.service
         mode: "0644"
       vars:
-        command_line_args: --web.listen-address=:9100
+        command_line_args:
+          - --web.listen-address=:9100
 
     - name: Enable and start service
       ansible.builtin.systemd:

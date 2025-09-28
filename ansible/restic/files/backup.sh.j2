@@ -29,3 +29,9 @@ date
   --prune
 
 /usr/local/bin/restic snapshots
+
+cat <<EOF | curl --data-binary @- {{ pushgateway_url }}/metrics/job/docker_backup/instance/$(hostname)
+# HELP last_success_timestamp_seconds Unix time of the last successful run.
+# TYPE last_success_timestamp_seconds gauge
+last_success_timestamp_seconds $(date +%s)
+EOF
