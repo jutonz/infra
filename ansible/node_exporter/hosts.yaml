@@ -6,7 +6,7 @@ all:
       ansible_user: root
       arch: amd64
     littlebox:
-      ansible_host: littlebox.local
+      ansible_host: littlebox
       ansible_user: root
       arch: amd64
     ttv:

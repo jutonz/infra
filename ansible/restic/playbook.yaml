@@ -7,6 +7,7 @@
     version: "0.18.1"
     backup_start_hour: 6
     backup_hour: "{{ backup_start_hour | int + (ansible_play_hosts.index(inventory_hostname) | int) }}"
+    pushgateway_url: http://192.168.1.94:9091
   tasks:
     - name: Install packages
       ansible.builtin.package:
