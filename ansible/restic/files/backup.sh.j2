@@ -22,10 +22,10 @@ date
 /usr/local/bin/restic \
   forget \
   --host={{hostname }} \
-  --keep-daily=1 \
-  --keep-weekly=1 \
-  --keep-monthly=1 \
-  --keep-yearly=1 \
+  --keep-within-daily=7d \
+  --keep-within-weekly=1m \
+  --keep-within-monthly=1y \
+  --keep-within-yearly=100y \
   --prune
 
 /usr/local/bin/restic check
