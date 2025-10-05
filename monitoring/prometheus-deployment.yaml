@@ -23,8 +23,17 @@ spec:
         io.kompose.service: prometheus
     spec:
       containers:
-        - image: prom/prometheus:v3.2.1
+        - image: prom/prometheus:v3.6.0
           name: prometheus
+          args:
+            # Defaults from Dockerfile CMD
+            # https://github.com/prometheus/prometheus/blob/main/Dockerfile
+            # NOTE: Make sure these stays in sync when upgrading.
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+            # Ones I added:
+            # Increase metric retention time from default 15 days
+            - "--storage.tsdb.retention.time=31d"
           ports:
             - containerPort: 9090
               protocol: TCP
