@@ -28,6 +28,8 @@ date
   --keep-yearly=1 \
   --prune
 
+/usr/local/bin/restic check
+
 /usr/local/bin/restic snapshots
 
 cat <<EOF | curl --data-binary @- {{ pushgateway_url }}/metrics/job/docker_backup/instance/$(hostname)
