@@ -17,7 +17,8 @@ spec:
         io.kompose.service: grafana
     spec:
       containers:
-        - image: grafana/grafana-oss:11.6.0
+        # I don't know what the timestamp at the end is. ubuntu version?
+        - image: grafana/grafana-oss:12.2.0-17142428006-ubuntu
           name: grafana
           ports:
             - containerPort: 3000
