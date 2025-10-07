@@ -30,7 +30,7 @@ date
 
 /usr/local/bin/restic check
 
-/usr/local/bin/restic snapshots
+/usr/local/bin/restic snapshots --host={{hostname}}
 
 cat <<EOF | curl --data-binary @- {{ pushgateway_url }}/metrics/job/docker_backup/instance/$(hostname)
 # HELP last_success_timestamp_seconds Unix time of the last successful run.
