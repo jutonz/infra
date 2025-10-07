@@ -17,7 +17,7 @@ spec:
         io.kompose.service: tempo
     spec:
       containers:
-        - image: grafana/tempo:latest
+        - image: grafana/tempo:2.8.2
           name: tempo
           args:
             - -config.file=/etc/tempo-config.yaml

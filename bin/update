@@ -31,3 +31,9 @@ kustomize build \
   --enable-exec \
   monitoring \
 | kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  influxdb \
+| kubectl apply -f -
