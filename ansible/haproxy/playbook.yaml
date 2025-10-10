@@ -104,8 +104,7 @@
           --agree-tos \
           --email={{ letsencrypt_email }} \
           --deploy-hook "/etc/letsencrypt/renewal-hooks/deploy/restart-haproxy.sh" \
-          --expand \
-          --dry-run \
-          {% for domain in certbot_domains %}-d {{ domain }} {% endfor %}
+          -d {{ item }}
+      loop: "{{ certbot_domains }}"
       args:
-        creates: "/etc/haproxy/certs/app.jutonz.com.pem"
+        creates: "/etc/haproxy/certs/{{ item }}.pem"
