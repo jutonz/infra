@@ -18,7 +18,7 @@ spec:
         diun.watch_repo: "true"
         diun.sort_tags: "semver"
         diun.max_tags: "2"
-        diun.include_tags: '^\d+\.\d+\.\d+-\d+$'
+        diun.include_tags: '^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$'
       labels:
         io.kompose.service: grafana
     spec:
