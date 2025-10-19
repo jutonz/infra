@@ -13,11 +13,18 @@ spec:
     type: Recreate
   template:
     metadata:
+      annotations:
+        diun.enable: "true"
+        diun.watch_repo: "true"
+        diun.sort_tags: "semver"
+        diun.max_tags: "2"
+        diun.include_tags: '^[0-9]+\.[0-9]+\.[0-9]+$'
       labels:
         io.kompose.service: tempo
     spec:
       containers:
-        - image: grafana/tempo:2.8.2
+        # https://github.com/grafana/tempo/releases
+        - image: grafana/tempo:2.9.0
           name: tempo
           args:
             - -config.file=/etc/tempo-config.yaml
