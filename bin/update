@@ -37,3 +37,9 @@ kustomize build \
   --enable-exec \
   influxdb \
 | kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  diun \
+| kubectl apply -f -
