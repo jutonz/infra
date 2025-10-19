@@ -12,7 +12,6 @@
     - name: Install packages
       ansible.builtin.package:
         name:
-          - restic
           - bzip2
         state: present
 
