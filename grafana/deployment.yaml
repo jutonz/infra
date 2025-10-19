@@ -13,12 +13,17 @@ spec:
     type: Recreate
   template:
     metadata:
+      annotations:
+        diun.enable: "true"
+        diun.watch_repo: "true"
+        diun.sort_tags: "semver"
+        diun.max_tags: "2"
+        diun.include_tags: '^\d+\.\d+\.\d+-\d+$'
       labels:
         io.kompose.service: grafana
     spec:
       containers:
-        # I don't know what the timestamp at the end is. ubuntu version?
-        - image: grafana/grafana-oss:12.2.0-17142428006-ubuntu
+        - image: grafana/grafana-oss:12.2.0-17142428006
           name: grafana
           ports:
             - containerPort: 3000
