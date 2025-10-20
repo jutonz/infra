@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# /root/git-backup-script.sh
+
+export AWS_ACCESS_KEY_ID={{aws_access_key_id}}
+export AWS_SECRET_ACCESS_KEY={{aws_secret_access_key}}
+export RESTIC_PASSWORD={{restic_password}}
+export RESTIC_REPOSITORY={{restic_repository}}
+
+set -ex
+
+date
+
+/usr/local/bin/restic \
+  --verbose \
+{% for path in exclude_paths %}
+  --exclude {{ path }} \
+{% endfor %}
+  backup /home/git \
+  --exclude-caches
+
+/usr/local/bin/restic \
+  forget \
+  --host={{hostname }} \
+  --keep-within-daily=7d \
+  --keep-within-weekly=1m \
+  --keep-within-monthly=1y \
+  --keep-within-yearly=100y \
+  --prune
+
+/usr/local/bin/restic check
+
+/usr/local/bin/restic snapshots --host={{hostname}}
+
+cat <<EOF | curl --data-binary @- {{ pushgateway_url }}/metrics/job/git_backup/instance/$(hostname)
+# HELP last_success_timestamp_seconds Unix time of the last successful run.
+# TYPE last_success_timestamp_seconds gauge
+last_success_timestamp_seconds $(date +%s)
+EOF
