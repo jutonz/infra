@@ -1,0 +1,9 @@
+---
+all:
+  hosts:
+    littlebox:
+      ansible_host: littlebox
+      ansible_user: root
+      arch: amd64
+      hostname: littlebox
+      exclude_paths: []
