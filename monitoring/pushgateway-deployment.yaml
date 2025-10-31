@@ -23,7 +23,7 @@ spec:
         diun.include_tags: '^v[0-9]+\.[0-9]+\.[0-9]+$'
     spec:
       containers:
-        - image: prom/pushgateway:v1.11.1
+        - image: prom/pushgateway:v1.11.2
           name: pushgateway
           ports:
             - containerPort: 9091
