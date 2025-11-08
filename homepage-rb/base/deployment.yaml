@@ -29,6 +29,8 @@ spec:
               value: "prometheus-exporter"
             - name: PROMETHEUS_EXPORTER_PORT
               value: "9394"
+            - name: SOLID_QUEUE_IN_PUMA
+              value: "true"
             - name: RAILS_MASTER_KEY
               valueFrom:
                 secretKeyRef:
