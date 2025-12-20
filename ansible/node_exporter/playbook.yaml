@@ -4,7 +4,9 @@
   become: true
   vars:
     # https://github.com/prometheus/node_exporter/releases
-    version: "1.9.1"
+    version: "1.10.2"
+    textfile_dir: /var/lib/node_exporter/textfile_collector
+    upgradable_script_path: /usr/local/bin/prom_apt_upgradable.sh
   tasks:
     - name: Download binary
       ansible.builtin.get_url:
@@ -25,6 +27,26 @@
         remote_src: true
         mode: "0755"
 
+    - name: Create textfile collector directory
+      ansible.builtin.file:
+        path: "{{ textfile_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Install apt upgrade metrics script
+      ansible.builtin.copy:
+        src: ./files/prom_apt_upgradable.sh
+        dest: "{{ upgradable_script_path }}"
+        mode: "0755"
+
+    - name: Cron job for apt upgrade metrics
+      ansible.builtin.cron:
+        name: "Generate Prometheus apt update metrics"
+        user: root
+        minute: "0"
+        hour: "*/6"
+        job: "{{ upgradable_script_path }} > {{ textfile_dir }}/apt_upgradable.prom"
+
     - name: Install service
       ansible.builtin.template:
         src: ./files/node_exporter.service.j2
@@ -33,6 +55,7 @@
       vars:
         command_line_args:
           - --web.listen-address=:9100
+          - --collector.textfile.directory={{ textfile_dir }}
 
     - name: Enable and start service
       ansible.builtin.systemd:
