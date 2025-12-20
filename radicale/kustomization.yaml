@@ -4,7 +4,7 @@ namespace: radicale
 resources:
 - ./namespace.yaml
 - ./configmap-config.yaml
-- ./pvc-data.yaml
+- ./pvc-data-lh.yaml
 - ./deployment.yaml
 - ./service.yaml
 generators:
