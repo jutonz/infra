@@ -1,0 +1,12 @@
+---
+- name: Add k3s
+  hosts: all
+  become: true
+  tasks:
+    - name: Install cron job to prune old images
+      ansible.builtin.cron:
+        name: "Restic backup"
+        user: root
+        minute: "0"
+        hour: "2"
+        job: "/usr/local/bin/k3s crictl rmi --prune"
