@@ -27,6 +27,8 @@ spec:
       labels:
         io.kompose.service: radicale
     spec:
+      securityContext:
+        fsGroup: 2999
       containers:
         # https://github.com/tomsquest/docker-radicale/releases
         - image: tomsquest/docker-radicale:3.5.9.0
