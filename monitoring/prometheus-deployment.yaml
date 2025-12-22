@@ -56,4 +56,4 @@ spec:
             secretName: prometheus-config
         - name: prometheus-data
           persistentVolumeClaim:
-            claimName: prometheus-data
+            claimName: prometheus-data-lh

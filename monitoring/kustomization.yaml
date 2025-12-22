@@ -7,6 +7,7 @@ resources:
 - ./otel-collector-deployment.yaml
 - ./otel-collector-service.yaml
 - ./prometheus-data-pvc.yaml
+- ./prometheus-data-lh-pvc.yaml
 - ./prometheus-deployment.yaml
 - ./prometheus-service.yaml
 - ./prometheus-ingress.yaml
