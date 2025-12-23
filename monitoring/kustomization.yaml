@@ -12,6 +12,7 @@ resources:
 - ./prometheus-ingress.yaml
 - ./pushgateway-deployment.yaml
 - ./pushgateway-service.yaml
+- ./pushgateway-ingress.yaml
 - ./tempo-config-configmap.yaml
 - ./tempo-data-pvc.yaml
 - ./tempo-deployment.yaml
