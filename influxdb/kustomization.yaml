@@ -3,6 +3,6 @@ kind: Kustomization
 namespace: influxdb
 resources:
 - ./namespace.yaml
-- ./pvc-data.yaml
+- ./pvc-data-lh.yaml
 - ./deployment.yaml
 - ./service.yaml
