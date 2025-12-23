@@ -49,4 +49,4 @@ spec:
           name: tempo-config
         - name: tempo-data
           persistentVolumeClaim:
-            claimName: tempo-data
+            claimName: tempo-data-lh

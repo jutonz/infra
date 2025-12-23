@@ -13,7 +13,7 @@ resources:
 - ./pushgateway-deployment.yaml
 - ./pushgateway-service.yaml
 - ./tempo-config-configmap.yaml
-- ./tempo-data-pvc.yaml
+- ./tempo-data-lh-pvc.yaml
 - ./tempo-deployment.yaml
 - ./tempo-service.yaml
 generators:
