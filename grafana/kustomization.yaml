@@ -3,7 +3,7 @@ kind: Kustomization
 namespace: grafana
 resources:
 - ./namespace.yaml
-- ./pvc-data.yaml
+- ./pvc-data-lh.yaml
 - ./deployment.yaml
 - ./service.yaml
 - ./ingress.yaml
