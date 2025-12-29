@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: seaweedfs
+  name: seaweedfs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: seaweedfs
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        diun.enable: "true"
+        diun.watch_repo: "true"
+        diun.sort_tags: "reverse"
+        diun.max_tags: "2"
+        diun.include_tags: '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'
+      labels:
+        io.kompose.service: seaweedfs
+    spec:
+      containers:
+        - image: chrislusf/seaweedfs:4.0.4
+          name: seaweedfs
+          ports:
+            - containerPort: 9333
+              protocol: TCP
+      restartPolicy: Always
