@@ -28,15 +28,6 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values:
-                      - cary
   volumeClaimTemplates:
     - metadata:
         name: data

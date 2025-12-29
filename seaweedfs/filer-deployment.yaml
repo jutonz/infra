@@ -12,15 +12,6 @@ spec:
       labels:
         io.kompose.service: filer
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values:
-                      - cary
       containers:
         - image: chrislusf/seaweedfs:4.04
           name: filer
