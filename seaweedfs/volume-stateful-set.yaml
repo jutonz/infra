@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: volume
+spec:
+  serviceName: volume
+  replicas: 1
+  selector:
+    matchLabels:
+      app: volume
+  template:
+    metadata:
+      labels:
+        app: volume
+    spec:
+      containers:
+        - image: chrislusf/seaweedfs:4.04
+          name: volume
+          args:
+            - volume
+            - "-mserver=master:9333"
+            - "-dir=/data"
+            - "-max=50"
+            - "-port=8080"
+          ports:
+            - containerPort: 8080
+            - containerPort: 18080
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - cary
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: longhorn
+        resources:
+          requests:
+            storage: 50Gi
