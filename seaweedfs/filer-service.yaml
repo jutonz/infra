@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: filer
 spec:
+  type: LoadBalancer
   selector:
     io.kompose.service: filer
   ports:
@@ -12,3 +13,6 @@ spec:
     - name: grpc
       port: 18888
       targetPort: 18888
+    - name: s3
+      port: 8333
+      targetPort: 8333

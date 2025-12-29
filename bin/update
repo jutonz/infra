@@ -5,53 +5,53 @@ set -ex
 kustomize build \
   --enable-alpha-plugins \
   --enable-exec \
-  seaweedfs \
+  radicale \
 | kubectl apply -f -
 
-# kustomize build \
-#   --enable-alpha-plugins \
-#   --enable-exec \
-#   radicale \
-# | kubectl apply -f -
-#
-# kustomize build \
-#   --enable-alpha-plugins \
-#   --enable-exec \
-#   homepage-rb/overlays/prod \
-# | kubectl apply -f -
-#
-# kustomize build \
-#   --enable-alpha-plugins \
-#   --enable-exec \
-#   homepage/overlays/prod \
-# | kubectl apply -f -
-#
-# kustomize build \
-#   --enable-alpha-plugins \
-#   --enable-exec \
-#   grafana \
-# | kubectl apply -f -
-#
-# kustomize build \
-#   --enable-alpha-plugins \
-#   --enable-exec \
-#   monitoring \
-# | kubectl apply -f -
-#
-# kustomize build \
-#   --enable-alpha-plugins \
-#   --enable-exec \
-#   influxdb \
-# | kubectl apply -f -
-#
-# kustomize build \
-#   --enable-alpha-plugins \
-#   --enable-exec \
-#   diun \
-# | kubectl apply -f -
-#
-# kustomize build \
-#   --enable-alpha-plugins \
-#   --enable-exec \
-#   longhorn \
-# | kubectl apply -f -
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  homepage-rb/overlays/prod \
+| kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  homepage/overlays/prod \
+| kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  grafana \
+| kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  monitoring \
+| kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  influxdb \
+| kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  diun \
+| kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  longhorn \
+| kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  seaweedfs \
+| kubectl apply -f -
