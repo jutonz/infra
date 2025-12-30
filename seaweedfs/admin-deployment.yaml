@@ -23,8 +23,8 @@ spec:
             - admin
             - "-port=23646"
             - "-masters=master:9333"
-            - "-adminUser=admin"
-            - "-adminPassword=password123"
+            - "-adminUser=$(ADMIN_USERNAME)"
+            - "-adminPassword=$(ADMIN_PASSWORD)"
             - "-dataDir=/data"
           ports:
             - containerPort: 23646
@@ -32,6 +32,17 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+          env:
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: admin-secret
+                  key: ADMIN_USERNAME
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: admin-secret
+                  key: ADMIN_PASSWORD
       restartPolicy: Always
       volumes:
         - name: data
