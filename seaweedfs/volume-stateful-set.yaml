@@ -20,7 +20,7 @@ spec:
             - volume
             - "-mserver=master:9333"
             - "-dir=/data"
-            - "-max=50"
+            - "-max=256"
             - "-port=8080"
           ports:
             - containerPort: 8080
