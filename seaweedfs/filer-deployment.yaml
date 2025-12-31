@@ -23,6 +23,7 @@ spec:
             - "-s3.port=8333"
           ports:
             - containerPort: 8888
+            - containerPort: 18888
             - containerPort: 8333
           volumeMounts:
             - name: data
