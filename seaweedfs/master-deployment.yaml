@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: master
+  name: master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: master
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        diun.enable: "true"
+        diun.watch_repo: "true"
+        diun.sort_tags: "reverse"
+        diun.max_tags: "2"
+        diun.include_tags: '^[0-9]+\.[0-9]+$'
+      labels:
+        io.kompose.service: master
+    spec:
+      containers:
+        - image: chrislusf/seaweedfs:4.04
+          name: master
+          args:
+            - master
+            - "-port=9333"
+          ports:
+            - containerPort: 9333
+              protocol: TCP
+            - containerPort: 19333
+              protocol: TCP
+      restartPolicy: Always

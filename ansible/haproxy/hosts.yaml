@@ -11,6 +11,7 @@ all:
                 - ENC[AES256_GCM,data:zd2jKPDbNaBeXMIbssbU,iv:ak8pVs5HB2dcz7NqiK261mks8Ua12KgCXtUrlkkiwMM=,tag:bWV0sQEpXOYf3Wyt7hIMyA==,type:str]
                 - ENC[AES256_GCM,data:zOeLcS0zTkIU5g==,iv:MqbQROMuqblIeHaK/D9UFuP4HYVD7EnFgyG34AJLN5M=,tag:NYzZcAsMTXO/DFI8zPglZQ==,type:str]
                 - ENC[AES256_GCM,data:AW61IBeZMj3RKzxr3kfKAafrUXcEqmVEutc=,iv:NlFtQmwkdBjZu9uDIaxfCRiTvlrMASKvEGeF6eDF6Ds=,tag:tf0lV48VlAUktJ50sZJTJg==,type:str]
+                - ENC[AES256_GCM,data:ltndFaCy227jZ2w83rxhdw==,iv:QrJwy6c8/8EVOXZIhgiNM7uUAkNm2Tc2GFqRKEdS72Y=,tag:LjMzULx1S/YqPr85yEi6qA==,type:str]
 sops:
     age:
         - recipient: age1fs9c9xejszarcv6c3r62efnkny06yvl6zgjlhemmyvyd2t8zq40sqtnpvg
@@ -22,7 +23,7 @@ sops:
             VkdOL3pyV2loVHMwa0tXRWpGVGtqUlEK5GxPsA3U4WMPe49QxzBawa1q2mzuVDyD
             VqGz49gwVqKqYmTK3+SeVRzTrKSaJ4+cNUJKuh5oc0fVNlJMQDDrfw==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2025-07-06T17:15:49Z"
-    mac: ENC[AES256_GCM,data:OgTQb5Pr7TX/4R9H48D/FXsJQurv1ezxW2q3i1yM4pXRkTromXfGfuL58UcdLScDaOAW4izpSF8gJ1jFY0Aj2RT+lk6QAnLnnXsAlkbDJ79aTTieCc6f1B3ccKKzNKSGbuCJFORflsGCVsqOmG1B9nVPMIrEvmgOXJ97WVdEUDg=,iv:9gyW5n7X6AoMjSZI9dk/MU2fshCDjW6PH6Ig7cHvSOE=,tag:+sNI33npAmavybpto/7wgg==,type:str]
+    lastmodified: "2025-12-30T15:55:49Z"
+    mac: ENC[AES256_GCM,data:LM0EQwWRw+vZllvX+dms0dFYsM/Q+Xj+thHHNT06mNSGmAYeiXY4b0chHEZCb26Fs4vRVNAyqW4uWUZdAmfCSXo0Owz514FJsmc32UZDYNJHdT6dUahsL7Z6w5Ybmnme7+1StoPNVGmfN7qc2dg8usTHtn4HFEdSmLmX5fYA+EU=,iv:vhedGSIUmH7d2eHPSJQ2fv0EVT1qkFEp96ar41Fq3Ws=,tag:0eFA/FmX9iwUldvYJF73FA==,type:str]
     encrypted_regex: ^(letsencrypt_email|certbot_domains)$
-    version: 3.10.2
+    version: 3.11.0

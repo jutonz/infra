@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: filer
+  template:
+    metadata:
+      labels:
+        io.kompose.service: filer
+    spec:
+      containers:
+        - image: chrislusf/seaweedfs:4.04
+          name: filer
+          args:
+            - filer
+            - "-master=master:9333"
+            - "-ip.bind=0.0.0.0"
+            - "-s3"
+            - "-s3.port=8333"
+          ports:
+            - containerPort: 8888
+            - containerPort: 18888
+            - containerPort: 8333
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /etc/seaweedfs
+              readOnly: true
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: filer-data
+        - name: config
+          configMap:
+            name: filer-config
+            items:
+              - key: filer.toml
+                path: filer.toml

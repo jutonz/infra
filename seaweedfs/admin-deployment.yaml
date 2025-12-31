@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: admin
+  name: admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: admin
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: admin
+    spec:
+      containers:
+        - image: chrislusf/seaweedfs:4.04
+          name: admin
+          args:
+            - admin
+            - "-port=23646"
+            - "-masters=master:9333"
+            - "-adminUser=$(ADMIN_USERNAME)"
+            - "-adminPassword=$(ADMIN_PASSWORD)"
+            - "-dataDir=/data"
+          ports:
+            - containerPort: 23646
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          env:
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: admin-secret
+                  key: ADMIN_USERNAME
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: admin-secret
+                  key: ADMIN_PASSWORD
+      restartPolicy: Always
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: admin-data

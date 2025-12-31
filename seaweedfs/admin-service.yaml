@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin
+spec:
+  selector:
+    io.kompose.service: admin
+  ports:
+    - name: http
+      port: 23646
+      targetPort: 23646
