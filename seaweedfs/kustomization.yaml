@@ -16,4 +16,4 @@ resources:
 - ./admin-deployment.yaml
 - ./admin-ingress.yaml
 generators:
-- ./admin-secret-generator.yaml
+- ./secret-generator.yaml
