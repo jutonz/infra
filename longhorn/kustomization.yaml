@@ -3,3 +3,6 @@ kind: Kustomization
 namespace: longhorn-system
 resources:
 - ./ingress.yaml
+- ./default-resource.yaml
+generators:
+- ./secret-generator.yaml
