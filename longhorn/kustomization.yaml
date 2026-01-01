@@ -4,5 +4,6 @@ namespace: longhorn-system
 resources:
 - ./ingress.yaml
 - ./default-resource.yaml
+- ./s3-backup-daily-recurring-job.yaml
 generators:
 - ./secret-generator.yaml
