@@ -50,6 +50,7 @@ spec:
             - mountPath: /prometheus
               name: prometheus-data
       restartPolicy: Always
+      serviceAccountName: prometheus
       volumes:
         - name: prometheus-config
           secret:
