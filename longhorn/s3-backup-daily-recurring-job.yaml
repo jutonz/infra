@@ -1,0 +1,14 @@
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: s3-backup-daily
+spec:
+  cron: "0 6 * * *" # daily at 1am ET
+  task: backup
+  groups:
+    - s3-backup
+  retain: 7
+  concurrency: 2
+  labels:
+    purpose: s3
+
