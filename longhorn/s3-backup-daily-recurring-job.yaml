@@ -8,7 +8,7 @@ spec:
   groups:
     - s3-backup
   retain: 7
-  concurrency: 2
+  concurrency: 1
   labels:
     purpose: s3
 
