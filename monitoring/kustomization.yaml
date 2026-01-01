@@ -6,6 +6,9 @@ resources:
 - ./otel-collector-config-configmap.yaml
 - ./otel-collector-deployment.yaml
 - ./otel-collector-service.yaml
+- ./prometheus-service-account.yaml
+- ./prometheus-cluster-role.yaml
+- ./prometheus-cluster-role-binding.yaml
 - ./prometheus-data-lh-pvc.yaml
 - ./prometheus-deployment.yaml
 - ./prometheus-service.yaml
