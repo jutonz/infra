@@ -3,36 +3,11 @@
   hosts: all
   become: true
   vars:
-    # see https://github.com/restic/restic/releases
-    version: "0.18.1"
     backup_start_hour: 6
     backup_hour: "{{ backup_start_hour | int + (ansible_play_hosts.index(inventory_hostname) | int) }}"
-    pushgateway_url: http://192.168.1.94:9091
+  roles:
+    - role: restic
   tasks:
-    - name: Install packages
-      ansible.builtin.package:
-        name:
-          - bzip2
-        state: present
-
-    - name: Download binary
-      ansible.builtin.get_url:
-        url: https://github.com/restic/restic/releases/download/v{{ version }}/restic_{{ version }}_linux_{{ arch }}.bz2
-        dest: /tmp/restic-{{ version }}.bz2
-        mode: "0644"
-
-    - name: Extract binary
-      ansible.builtin.command:
-        cmd: bunzip2 -f /tmp/restic-{{ version }}.bz2
-      changed_when: false
-
-    - name: Put binary on path
-      ansible.builtin.copy:
-        src: /tmp/restic-{{ version }}
-        dest: /usr/local/bin/restic
-        remote_src: true
-        mode: "0755"
-
     # NOTE: Repository must already have been initialized
     - name: Add backup script
       ansible.builtin.template:
@@ -42,6 +17,7 @@
         group: root
         mode: "0644"
       vars:
+        pushgateway_url: "{{ restic_pushgateway_url }}"
         aws_access_key_id: >-
           {{ lookup(
               'community.general.onepassword',

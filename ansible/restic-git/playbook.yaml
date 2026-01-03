@@ -2,12 +2,9 @@
 - name: Install restic for git backup
   hosts: all
   become: true
-  vars:
-    # see https://github.com/restic/restic/releases
-    version: "0.18.1"
-    pushgateway_url: http://192.168.1.94:9091
+  roles:
+    - role: restic
   tasks:
-    # TODO: Ensure restic is installed already.
     # NOTE: Repository must already have been initialized.
     - name: Add backup script
       ansible.builtin.template:
@@ -17,6 +14,7 @@
         group: root
         mode: "0644"
       vars:
+        pushgateway_url: "{{ restic_pushgateway_url }}"
         aws_access_key_id: >-
           {{ lookup(
               'community.general.onepassword',

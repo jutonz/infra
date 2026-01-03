@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  author: jutonz
+  description: Install restic backup utility from GitHub releases
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+
+dependencies: []
