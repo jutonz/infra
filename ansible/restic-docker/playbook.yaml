@@ -45,7 +45,8 @@
         aws_access_key_id: >-
           {{ lookup(
               'community.general.onepassword',
-              'minio docker backup script',
+              'SeaweedFS',
+              section='docker-backup',
               field='access key id',
               account_id='BUEIPQKXV5APLFA6R6AGR34NZ4',
               vault='Infra'
@@ -53,7 +54,8 @@
         aws_secret_access_key: >-
           {{ lookup(
               'community.general.onepassword',
-              'minio docker backup script',
+              'SeaweedFS',
+              section='docker-backup',
               field='secret access key',
               account_id='BUEIPQKXV5APLFA6R6AGR34NZ4',
               vault='Infra'
@@ -70,7 +72,7 @@
           {{ lookup(
               'community.general.onepassword',
               'restic',
-              field='docker backups repo',
+              field='docker backup repo',
               account_id='BUEIPQKXV5APLFA6R6AGR34NZ4',
               vault='Infra'
           ) }}
