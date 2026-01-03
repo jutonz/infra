@@ -7,31 +7,8 @@
     version: "0.18.1"
     pushgateway_url: http://192.168.1.94:9091
   tasks:
-    # - name: Install packages
-    #   ansible.builtin.package:
-    #     name:
-    #       - bzip2
-    #     state: present
-    #
-    # - name: Download binary
-    #   ansible.builtin.get_url:
-    #     url: https://github.com/restic/restic/releases/download/v{{ version }}/restic_{{ version }}_linux_{{ arch }}.bz2
-    #     dest: /tmp/restic-{{ version }}.bz2
-    #     mode: "0644"
-    #
-    # - name: Extract binary
-    #   ansible.builtin.command:
-    #     cmd: bunzip2 -f /tmp/restic-{{ version }}.bz2
-    #   changed_when: false
-    #
-    # - name: Put binary on path
-    #   ansible.builtin.copy:
-    #     src: /tmp/restic-{{ version }}
-    #     dest: /usr/local/bin/restic
-    #     remote_src: true
-    #     mode: "0755"
-
-    # NOTE: Repository must already have been initialized
+    # TODO: Ensure restic is installed already.
+    # NOTE: Repository must already have been initialized.
     - name: Add backup script
       ansible.builtin.template:
         src: files/backup.sh.j2
@@ -43,7 +20,8 @@
         aws_access_key_id: >-
           {{ lookup(
               'community.general.onepassword',
-              'minio git backup script',
+              'SeaweedFS',
+              section='git-backup',
               field='access key id',
               account_id='BUEIPQKXV5APLFA6R6AGR34NZ4',
               vault='Infra'
@@ -51,7 +29,8 @@
         aws_secret_access_key: >-
           {{ lookup(
               'community.general.onepassword',
-              'minio git backup script',
+              'SeaweedFS',
+              section='git-backup',
               field='secret access key',
               account_id='BUEIPQKXV5APLFA6R6AGR34NZ4',
               vault='Infra'
