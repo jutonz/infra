@@ -1,0 +1,4 @@
+---
+# See https://github.com/restic/restic/releases
+restic_version: "0.18.1"
+restic_pushgateway_url: http://pushgateway.home.arpa

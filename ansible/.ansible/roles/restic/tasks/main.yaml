@@ -1,0 +1,24 @@
+---
+- name: Install packages
+  ansible.builtin.package:
+    name:
+      - bzip2
+    state: present
+
+- name: Download binary
+  ansible.builtin.get_url:
+    url: https://github.com/restic/restic/releases/download/v{{ restic_version }}/restic_{{ restic_version }}_linux_{{ arch }}.bz2
+    dest: /tmp/restic-{{ restic_version }}.bz2
+    mode: "0644"
+
+- name: Extract binary
+  ansible.builtin.command:
+    cmd: bunzip2 /tmp/restic-{{ restic_version }}.bz2
+    creates: /tmp/restic-{{ restic_version }}
+
+- name: Put binary on path
+  ansible.builtin.copy:
+    src: /tmp/restic-{{ restic_version }}
+    dest: /usr/local/bin/restic
+    remote_src: true
+    mode: "0755"
