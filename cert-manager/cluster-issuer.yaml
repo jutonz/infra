@@ -4,7 +4,7 @@ metadata:
     name: letsencrypt-dns
 spec:
     acme:
-        email: wasp_deliverer767@simplelogin.com
+        email: ENC[AES256_GCM,data:f8nYTj9X8djuNBXvcOcvDNuE2v5kb2Z2ZZ8t1J/gWP2c,iv:5jEsR41Q2WezVYS3o+buhS+mJV4OxqDDDq9bNub2Vlk=,tag:025ovhCrvE3wgEJ5ySsI4g==,type:str]
         server: https://acme-v02.api.letsencrypt.org/directory
         privateKeySecretRef:
             name: letsencrypt-dns-key
@@ -19,13 +19,13 @@ sops:
         - recipient: age1fs9c9xejszarcv6c3r62efnkny06yvl6zgjlhemmyvyd2t8zq40sqtnpvg
           enc: |
             -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzWkVETUpWL3dKaTlTTFFY
-            NUc3L1lkU2hHeUVjYWtIcmZQaWl4bFdJZVFrCk9uNGhJM1djZ3krSm8wWE14bkx0
-            U3dqcllhQ1daVGtkaFNhRFVwSWY5Q28KLS0tIEhwMG91dFhwYmtWVnRnODNvU3RT
-            Y1ZmaEdlRlFsZU1PSmlMd0t6VDBQNjQKA2O4IvtIOitTkIvEbSXXxwn5lb+WzvPY
-            CDyPs86xZ3e8yHAY3JvqM+FJfb2be1Z08P7e8gCPBvotepDQIDyF9A==
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBCNEw0SmFYL2VrL0kxQ0Ir
+            ZzdsTjJFOHRwV0FuUzZRcElKSDBLSGQ3VlQ0CkNpR1NzbEpqVnh2N2dncUJNdzlp
+            ekF1bkJTKzBkUkVWYlhha2J4YUxGYkEKLS0tIDdRNmpib0pjUERub3FIYkgzMjND
+            M280bkQvdkdaWjZlLzJDM3MwUEU0V28K8DLoku2nyL95rLqOw1UDoCaZH3i2iGx1
+            QZLuzVd1KDt4kSposw3+q6otqWfC5/LLVXpXcB2I8Dnbwtm+CJDwBA==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2026-01-04T03:00:04Z"
-    mac: ENC[AES256_GCM,data:I4MNOysCfRaHx/Q8oP+0Q2lYULpPR+KaOhwMagPlbbjVxGToUHC7i58PV2GpsjWpmIZG7Yx/lsnIb8p97hJCeomABxqQt5BJ8cHEsFU3guP0EWmISOU+iugVswPZXpU8CpmTfeQFwRD65IuLpJ8SaUh5wp5JHA/XpU+XdeWzuHg=,iv:lj8vpa71dzVIIuFU65vVI6fGm5zGVql23RGev9mX2lQ=,tag:L8VCcPGYE4dZ1KTwKSt6lQ==,type:str]
-    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-01-04T03:37:39Z"
+    mac: ENC[AES256_GCM,data:2FKgGkKwLzbBYtAebONazVntJ+b/1VCiA2Ve3rqNkC34rcprk4qikRZdKQ0inSGm8aSx2n9bEuZhH24xs7zM5qVkhNm20QmG1fkEN1zuYL7D0a54Kegq/0tuwY44QmXf9pJetjSD3MGvq91Aw913XkbYbcDXx2rA9yFPUl007zk=,iv:H71VnhrtpPluTaoReyWUuQ3yERv4V5AyNYxsj/vh+YY=,tag:9CffHD5wrv57eaeAA4+48A==,type:str]
+    encrypted_regex: ^(data|stringData|email)$
     version: 3.11.0
