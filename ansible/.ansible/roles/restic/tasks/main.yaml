@@ -13,8 +13,8 @@
 
 - name: Extract binary
   ansible.builtin.command:
-    cmd: bunzip2 -f /tmp/restic-{{ restic_version }}.bz2
-  changed_when: false
+    cmd: bunzip2 /tmp/restic-{{ restic_version }}.bz2
+    creates: /tmp/restic-{{ restic_version }}
 
 - name: Put binary on path
   ansible.builtin.copy:
