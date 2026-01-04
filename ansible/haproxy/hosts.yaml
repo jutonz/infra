@@ -6,11 +6,9 @@ all:
             letsencrypt_email: ENC[AES256_GCM,data:L5ZbXmZb5mVLMN+F+wey0ja9c8G3l1MsJI9GR2XJW5Oy,iv:5vXr5VxU1XZj++0/Df6BUhsL3e5NZPGPvjMdyz3QagM=,tag:KIsOf3zbYlzSJC2srQvXng==,type:str]
             certbot_domains:
                 - ENC[AES256_GCM,data:dZRK8sOWRcbL8dzC1Jk=,iv:S1rbiTbEaFDQYyPK5gNROw8/5h6epkz2pvudFL1D9UA=,tag:QXODGRiKg8/2EeobTsqfUg==,type:str]
-                - ENC[AES256_GCM,data:fSNY5HtNIWu7M0NgYVj6iwO3sdZiAo8=,iv:C03yAcxYOUs7tXot4i21e/BSPYCexBkkPu8KX3cCH90=,tag:OuUNu3NqMruL+OPxuXUtHA==,type:str]
                 - ENC[AES256_GCM,data:WchpuDDps872WKDOv0qELkT5Sw==,iv:KSsNxuJkuys48Bsny3sWjJ6xkBn+mv2b5EsHrAraPj0=,tag:+jPEN3HgMXy28q2CEiLnbQ==,type:str]
                 - ENC[AES256_GCM,data:zd2jKPDbNaBeXMIbssbU,iv:ak8pVs5HB2dcz7NqiK261mks8Ua12KgCXtUrlkkiwMM=,tag:bWV0sQEpXOYf3Wyt7hIMyA==,type:str]
                 - ENC[AES256_GCM,data:zOeLcS0zTkIU5g==,iv:MqbQROMuqblIeHaK/D9UFuP4HYVD7EnFgyG34AJLN5M=,tag:NYzZcAsMTXO/DFI8zPglZQ==,type:str]
-                - ENC[AES256_GCM,data:AW61IBeZMj3RKzxr3kfKAafrUXcEqmVEutc=,iv:NlFtQmwkdBjZu9uDIaxfCRiTvlrMASKvEGeF6eDF6Ds=,tag:tf0lV48VlAUktJ50sZJTJg==,type:str]
                 - ENC[AES256_GCM,data:ltndFaCy227jZ2w83rxhdw==,iv:QrJwy6c8/8EVOXZIhgiNM7uUAkNm2Tc2GFqRKEdS72Y=,tag:LjMzULx1S/YqPr85yEi6qA==,type:str]
 sops:
     age:
@@ -23,7 +21,7 @@ sops:
             VkdOL3pyV2loVHMwa0tXRWpGVGtqUlEK5GxPsA3U4WMPe49QxzBawa1q2mzuVDyD
             VqGz49gwVqKqYmTK3+SeVRzTrKSaJ4+cNUJKuh5oc0fVNlJMQDDrfw==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2025-12-30T15:55:49Z"
-    mac: ENC[AES256_GCM,data:LM0EQwWRw+vZllvX+dms0dFYsM/Q+Xj+thHHNT06mNSGmAYeiXY4b0chHEZCb26Fs4vRVNAyqW4uWUZdAmfCSXo0Owz514FJsmc32UZDYNJHdT6dUahsL7Z6w5Ybmnme7+1StoPNVGmfN7qc2dg8usTHtn4HFEdSmLmX5fYA+EU=,iv:vhedGSIUmH7d2eHPSJQ2fv0EVT1qkFEp96ar41Fq3Ws=,tag:0eFA/FmX9iwUldvYJF73FA==,type:str]
+    lastmodified: "2026-01-04T16:28:39Z"
+    mac: ENC[AES256_GCM,data:o5B/h/wBtT1z8xGwr6BQ3VVw+aa7R4+BUqz3P2sh7KH1BxEQz4GYl/t60S6ycAGQiCJlRqBCFmrtuguJ3FpND/NRvSeCcFvnWC276p0GOI0tFsI6bZMNx6HqdPOiUND9jiQPXnP/U1ZBLJUpRu8vkiyFM5sQq99BvLvWJkpUhkM=,iv:s/CW8B/0kG1mnazpeqtSyu6mlXSrQCUr/cv0JU+1Ufw=,tag:u7w8OirrSWQ8vmI2EJmH7w==,type:str]
     encrypted_regex: ^(letsencrypt_email|certbot_domains)$
     version: 3.11.0
