@@ -1,0 +1,31 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+    name: letsencrypt-dns
+spec:
+    acme:
+        email: wasp_deliverer767@simplelogin.com
+        server: https://acme-v02.api.letsencrypt.org/directory
+        privateKeySecretRef:
+            name: letsencrypt-dns-key
+        solvers:
+            - dns01:
+                digitalocean:
+                    tokenSecretRef:
+                        name: do-le-token
+                        key: access-token
+sops:
+    age:
+        - recipient: age1fs9c9xejszarcv6c3r62efnkny06yvl6zgjlhemmyvyd2t8zq40sqtnpvg
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzWkVETUpWL3dKaTlTTFFY
+            NUc3L1lkU2hHeUVjYWtIcmZQaWl4bFdJZVFrCk9uNGhJM1djZ3krSm8wWE14bkx0
+            U3dqcllhQ1daVGtkaFNhRFVwSWY5Q28KLS0tIEhwMG91dFhwYmtWVnRnODNvU3RT
+            Y1ZmaEdlRlFsZU1PSmlMd0t6VDBQNjQKA2O4IvtIOitTkIvEbSXXxwn5lb+WzvPY
+            CDyPs86xZ3e8yHAY3JvqM+FJfb2be1Z08P7e8gCPBvotepDQIDyF9A==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2026-01-04T03:00:04Z"
+    mac: ENC[AES256_GCM,data:I4MNOysCfRaHx/Q8oP+0Q2lYULpPR+KaOhwMagPlbbjVxGToUHC7i58PV2GpsjWpmIZG7Yx/lsnIb8p97hJCeomABxqQt5BJ8cHEsFU3guP0EWmISOU+iugVswPZXpU8CpmTfeQFwRD65IuLpJ8SaUh5wp5JHA/XpU+XdeWzuHg=,iv:lj8vpa71dzVIIuFU65vVI6fGm5zGVql23RGev9mX2lQ=,tag:L8VCcPGYE4dZ1KTwKSt6lQ==,type:str]
+    encrypted_regex: ^(data|stringData)$
+    version: 3.11.0

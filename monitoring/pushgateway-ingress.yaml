@@ -2,9 +2,15 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: pushgateway
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns
 spec:
+  tls:
+  - hosts:
+    - pushgateway.home.jutonz.com
+    secretName: pushgateway-tls
   rules:
-  - host: pushgateway.home.arpa
+  - host: pushgateway.home.jutonz.com
     http:
       paths:
       - path: /
