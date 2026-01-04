@@ -2,9 +2,15 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: admin
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns
 spec:
+  tls:
+  - hosts:
+    - seaweed-admin.home.jutonz.com
+    secretName: seaweed-admin-tls
   rules:
-  - host: seaweed-admin.home.arpa
+  - host: seaweed-admin.home.jutonz.com
     http:
       paths:
       - path: /

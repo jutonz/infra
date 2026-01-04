@@ -55,3 +55,9 @@ kustomize build \
   --enable-exec \
   seaweedfs \
 | kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  cert-manager \
+| kubectl apply -f -

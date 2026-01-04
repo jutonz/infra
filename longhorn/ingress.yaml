@@ -2,9 +2,15 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: longhorn
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns
 spec:
+  tls:
+  - hosts:
+    - longhorn.home.jutonz.com
+    secretName: longhorn-tls
   rules:
-  - host: longhorn.home.arpa
+  - host: longhorn.home.jutonz.com
     http:
       paths:
       - path: /
