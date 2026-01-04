@@ -31,6 +31,9 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: data
+        # labels:
+        #   recurring-job.longhorn.io/source: enabled
+        #   recurring-job-group.longhorn.io/s3-backup: enabled
       spec:
         accessModes:
           - ReadWriteOnce
