@@ -4,6 +4,7 @@ metadata:
   name: grafana
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-dns
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-https-redirect@kubernetescrd
 spec:
   tls:
   - hosts:
