@@ -6,7 +6,6 @@ all:
             letsencrypt_email: ENC[AES256_GCM,data:L5ZbXmZb5mVLMN+F+wey0ja9c8G3l1MsJI9GR2XJW5Oy,iv:5vXr5VxU1XZj++0/Df6BUhsL3e5NZPGPvjMdyz3QagM=,tag:KIsOf3zbYlzSJC2srQvXng==,type:str]
             certbot_domains:
                 - ENC[AES256_GCM,data:dZRK8sOWRcbL8dzC1Jk=,iv:S1rbiTbEaFDQYyPK5gNROw8/5h6epkz2pvudFL1D9UA=,tag:QXODGRiKg8/2EeobTsqfUg==,type:str]
-                - ENC[AES256_GCM,data:WchpuDDps872WKDOv0qELkT5Sw==,iv:KSsNxuJkuys48Bsny3sWjJ6xkBn+mv2b5EsHrAraPj0=,tag:+jPEN3HgMXy28q2CEiLnbQ==,type:str]
                 - ENC[AES256_GCM,data:zd2jKPDbNaBeXMIbssbU,iv:ak8pVs5HB2dcz7NqiK261mks8Ua12KgCXtUrlkkiwMM=,tag:bWV0sQEpXOYf3Wyt7hIMyA==,type:str]
                 - ENC[AES256_GCM,data:zOeLcS0zTkIU5g==,iv:MqbQROMuqblIeHaK/D9UFuP4HYVD7EnFgyG34AJLN5M=,tag:NYzZcAsMTXO/DFI8zPglZQ==,type:str]
                 - ENC[AES256_GCM,data:ltndFaCy227jZ2w83rxhdw==,iv:QrJwy6c8/8EVOXZIhgiNM7uUAkNm2Tc2GFqRKEdS72Y=,tag:LjMzULx1S/YqPr85yEi6qA==,type:str]
@@ -21,7 +20,7 @@ sops:
             VkdOL3pyV2loVHMwa0tXRWpGVGtqUlEK5GxPsA3U4WMPe49QxzBawa1q2mzuVDyD
             VqGz49gwVqKqYmTK3+SeVRzTrKSaJ4+cNUJKuh5oc0fVNlJMQDDrfw==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2026-01-04T16:28:39Z"
-    mac: ENC[AES256_GCM,data:o5B/h/wBtT1z8xGwr6BQ3VVw+aa7R4+BUqz3P2sh7KH1BxEQz4GYl/t60S6ycAGQiCJlRqBCFmrtuguJ3FpND/NRvSeCcFvnWC276p0GOI0tFsI6bZMNx6HqdPOiUND9jiQPXnP/U1ZBLJUpRu8vkiyFM5sQq99BvLvWJkpUhkM=,iv:s/CW8B/0kG1mnazpeqtSyu6mlXSrQCUr/cv0JU+1Ufw=,tag:u7w8OirrSWQ8vmI2EJmH7w==,type:str]
+    lastmodified: "2026-01-06T23:11:02Z"
+    mac: ENC[AES256_GCM,data:mla6lX10Sqh5czrL5HclYvNHf8ZkH29wdhqoDmBzlr4nLvQYrMAnrE1J0qzfGpzCMN2yvq/IS3C7yg3lQ1QC9YhEyHHVD46IB5oGNCwGoMgMvW0juPR3ux2m2JtSpETISdAJ5Xx7U/0Ja4ewzYQv+HPUkHs/KYCFt9rncATVoFE=,iv:jT5sgj8/amFbgAF8kZJn7ya3tdGQcG2+lfJUPhHZj7w=,tag:mbWMfQ/7ypq/XSHeuPf40A==,type:str]
     encrypted_regex: ^(letsencrypt_email|certbot_domains)$
     version: 3.11.0
