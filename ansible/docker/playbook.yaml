@@ -1,0 +1,12 @@
+---
+- name: Install Docker prune cron job
+  hosts: all
+  become: true
+  tasks:
+    - name: Install cron job to prune Docker images and volumes
+      ansible.builtin.cron:
+        name: "Docker system prune"
+        user: root
+        minute: "0"
+        hour: "0"
+        job: "/usr/bin/docker system prune -af"
