@@ -7,5 +7,6 @@ resources:
 - ./pvc-data-lh.yaml
 - ./deployment.yaml
 - ./service.yaml
+- ./ingress.yaml
 generators:
 - ./secret-generator.yaml
