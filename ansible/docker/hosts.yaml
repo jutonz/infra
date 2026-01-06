@@ -1,0 +1,12 @@
+---
+all:
+  hosts:
+    cary:
+      ansible_host: cary
+      ansible_user: root
+    littlebox:
+      ansible_host: littlebox
+      ansible_user: root
+    mini:
+      ansible_host: mini
+      ansible_user: root
