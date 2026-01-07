@@ -2,6 +2,12 @@
 - name: Ensure Haproxy is installed
   hosts: all
   become: true
+  vars:
+    k8s_passthrough_domains:
+      - app.jutonz.com
+      - block.jutonz.com
+      - contacts.jutonz.com
+      - jutonz.com
   tasks:
     - name: Install snapd
       ansible.builtin.apt:
@@ -81,8 +87,8 @@
         mode: "0600"
 
     - name: Install config file
-      ansible.builtin.copy:
-        src: ./haproxy.cfg
+      ansible.builtin.template:
+        src: ./haproxy.cfg.j2
         dest: /etc/haproxy/haproxy.cfg
         mode: "0644"
 
