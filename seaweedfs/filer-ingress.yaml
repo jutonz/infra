@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: filer
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-https-redirect@kubernetescrd
+spec:
+  tls:
+  - hosts:
+    - block.jutonz.com
+    secretName: seaweed-filer-tls
+  rules:
+  - host: block.jutonz.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: filer
+            port:
+              name: http

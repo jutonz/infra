@@ -11,6 +11,7 @@ resources:
 - ./filer-data-pvc.yaml
 - ./filer-service.yaml
 - ./filer-deployment.yaml
+- ./filer-ingress.yaml
 - ./admin-data-pvc.yaml
 - ./admin-service.yaml
 - ./admin-deployment.yaml
