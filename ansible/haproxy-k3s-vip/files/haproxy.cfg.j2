@@ -1,0 +1,38 @@
+defaults
+  mode tcp
+  timeout client 10s
+  timeout connect 5s
+  timeout server 10s
+  timeout http-request 10s
+  log /dev/log local0 info
+  log global
+  option tcplog
+
+frontend http
+  mode http
+  bind :8001
+  redirect scheme https
+
+frontend https
+  bind :4430
+
+  tcp-request inspect-delay 5s
+  tcp-request content accept if { req_ssl_hello_type 1 }
+
+  acl is_k8s_passthrough req.ssl_sni -i {{ k8s_passthrough_domains | join(' ') }}
+  use_backend k8s_passthrough if is_k8s_passthrough
+
+frontend k8s
+  bind :64430
+  default_backend k8s-control-plane
+
+backend k8s_passthrough
+  server self 127.0.0.1:443
+
+backend k8s-control-plane
+  balance roundrobin
+  option tcp-check
+  default-server inter 10s downinter 5s
+  server mini 192.168.1.94:6443 check
+  server cary 192.168.1.100:6443 check
+  server littlebox 192.168.1.217:6443 check

@@ -1,0 +1,81 @@
+---
+- name: Haproxy for k3s vip + lb
+  hosts: all
+  become: true
+  handlers:
+    - name: Restart keepalived
+      ansible.builtin.systemd:
+        name: keepalived
+        state: restarted
+  tasks:
+    - name: Install packages
+      ansible.builtin.apt:
+        name:
+          - haproxy
+          - keepalived
+          - psmisc # for `killall -0` check
+        state: present
+
+    - name: Create empty certs dir
+      ansible.builtin.file:
+        path: /etc/haproxy/certs
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Generate self-signed cert so haproxy can start
+      ansible.builtin.shell: |
+        openssl req -x509 -nodes -newkey rsa:2048 \
+          -keyout "/tmp/dummy.jutonz.com.key" \
+          -out "/tmp/dummy.jutonz.com.crt" \
+          -days 1 \
+          -subj "/CN=dummy.jutonz.com"
+      args:
+        creates: "/tmp/dummy.jutonz.com.crt"
+
+    - name: Create combined .pem file
+      ansible.builtin.shell: |
+        cat "/tmp/dummy.jutonz.com.crt" "/tmp/dummy.jutonz.com.key" > "/etc/haproxy/certs/dummy.jutonz.com.pem"
+      args:
+        creates: "/etc/haproxy/certs/dummy.jutonz.com.pem"
+
+    - name: Ensure correct permissions on .pem file
+      ansible.builtin.file:
+        path: /etc/haproxy/certs/dummy.jutonz.com.pem
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Install haproxy config file
+      ansible.builtin.template:
+        src: ./files/haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+        mode: "0644"
+
+    - name: Verify haproxy config
+      ansible.builtin.command: /usr/sbin/haproxy -f /etc/haproxy/haproxy.cfg -c
+      changed_when: false
+
+    - name: Install keepalived config
+      ansible.builtin.template:
+        src: ./files/keepalived.conf.j2
+        dest: /etc/keepalived/keepalived.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart keepalived
+
+    - name: Reload haproxy
+      ansible.builtin.systemd:
+        name: haproxy
+        state: reloaded
+
+    - name: Ensure services enabled and running
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - haproxy
+        - keepalived

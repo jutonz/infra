@@ -1,0 +1,22 @@
+global_defs {
+  enable_script_security
+  script_user root
+}
+
+vrrp_script chk_haproxy {
+  script "killall -0 haproxy"
+  interval 2
+}
+
+vrrp_instance haproxy-vip {
+  interface {{ vrrp_interface }}
+  state {{ vrrp_state }}
+  priority {{ vrrp_priority }}
+  virtual_router_id {{ vrrp_id }}
+  virtual_ipaddress {
+    {{ vrrp_vip_cidr }}
+  }
+  track_script {
+    chk_haproxy
+  }
+}
