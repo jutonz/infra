@@ -1,7 +1,12 @@
 ---
-- name: Ensure Haproxy is installed
+- name: Haproxy for k3s vip + lb
   hosts: all
   become: true
+  handlers:
+    - name: Restart keepalived
+      ansible.builtin.systemd:
+        name: keepalived
+        state: restarted
   tasks:
     - name: Install packages
       ansible.builtin.apt:
@@ -52,16 +57,25 @@
       ansible.builtin.command: /usr/sbin/haproxy -f /etc/haproxy/haproxy.cfg -c
       changed_when: false
 
-    # - name: Install keepalived config
-    #   ansible.builtin.template:
-    #     src: ./files/keepalived.conf.j2
-    #     dest: /etc/keepalived/keepalived.conf
-    #     owner: root
-    #     group: root
-    #     mode: "0644"
-    #   notify: Restart keepalived
+    - name: Install keepalived config
+      ansible.builtin.template:
+        src: ./files/keepalived.conf.j2
+        dest: /etc/keepalived/keepalived.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart keepalived
 
     - name: Reload haproxy
       ansible.builtin.systemd:
         name: haproxy
         state: reloaded
+
+    - name: Ensure services enabled and running
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - haproxy
+        - keepalived

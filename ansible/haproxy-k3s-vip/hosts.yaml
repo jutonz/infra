@@ -1,0 +1,35 @@
+all:
+    vars:
+        ansible_user: root
+        k8s_passthrough_domains:
+            - ENC[AES256_GCM,data:NpqAl0jSpgTl+jegZcY=,iv:bcy3MV7ENhkYH62YcVvOD2fvmH94NUsdCB4WGXqgN5M=,tag:1T668iP1y0y2d4ixU9WuJQ==,type:str]
+            - ENC[AES256_GCM,data:wGvfQtJTTuVT7FElvkmr6w==,iv:CyU+6UY253CRwpNzLQs0M212DDF+u+ipSW6YoGoxNhU=,tag:bdeyXoMitcPTERaLy9R4fQ==,type:str]
+            - ENC[AES256_GCM,data:z6tIrZyFn3FPDigD8HyRQJxP3w==,iv:823C8UsWSOHdEpxaJgQZGVtopabhmM+uZF4+fmHfY0o=,tag:5/xtHIwbnKDm02fUS6oqsw==,type:str]
+            - ENC[AES256_GCM,data:R6cAVtuRGKMbFzsXJInK,iv:ZiLc9JgoRF5a6TAjzaRcG4cRcomnNyGR8vyl+gVk3fA=,tag:/c5TK+2j/52HcSks1wd6Jw==,type:str]
+            - ENC[AES256_GCM,data:NSuvxdxIAQ2kag==,iv:+tAqZ4D/FyKlUJ8+JzChydOkrGH/Lp0sbGFTVYojkto=,tag:Do5VHTFWeuJNqgID9UHNDA==,type:str]
+        vrrp_id: 21
+        vrrp_interface: enp1s0
+        vrrp_vip_cidr: 192.168.1.21/24
+        vrrp_priority: 100
+    hosts:
+        cary:
+            ansible_host: cary
+            vrrp_state: MASTER
+        mini:
+            ansible_host: mini
+            vrrp_state: BACKUP
+sops:
+    age:
+        - recipient: age1fs9c9xejszarcv6c3r62efnkny06yvl6zgjlhemmyvyd2t8zq40sqtnpvg
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBENHZucnNyR1VXS25RcVRq
+            UnNOV1NmZXZqZFNSei9rWklHd2JYNjRaMzNZCk4yaFd4SnRnc21UdUkvRjJzWW1F
+            VldrQktsN1MrQ3gzZ2RkWUFaUXNvcmMKLS0tIGhUS3VaUXZGYnE5QkFFUkRPTDJj
+            Y3p1SjhFdHhNMlA3Ulo0TllmYWllN2sK/LxmIO2kYdPAEXWnH51zUvxhB53rgGur
+            JooMOg+1tp10bICH4zMK5XnQKkg+CtmxuSW8235IeHwYI1yoeZeKUQ==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2026-01-07T17:47:11Z"
+    mac: ENC[AES256_GCM,data:+4YKzdGqw5ipSIZKTm7FqoEvfEoKaj3cYFVCKPkqHhRpEPZnm1ZWrxGfwe9Sm8dCkKbTCEkvWXCa5KuhwypRAc/sEeV9FJ/SKriHBVvYuCjfqOCzzThCNAOI4hW6FEVlAQqwrTd1vwebyO4bQeRVzY/1Zn5O4mQNhYTg5tyWadU=,iv:MRtc2lUu/m8qXSCiOd/3n5Cv907IStPfbuNvVtFdx0g=,tag:dRmwCdZK5sfcIz66aA/ElA==,type:str]
+    encrypted_regex: ^(letsencrypt_email|certbot_domains|k8s_passthrough_domains)$
+    version: 3.11.0

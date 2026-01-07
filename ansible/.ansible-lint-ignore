@@ -1,2 +1,2 @@
 # This file contains ignores rule violations for ansible-lint
-haproxy/hosts.yaml yaml[line-length]
+haproxy-k3s-vip/hosts.yaml yaml[line-length]
