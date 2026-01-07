@@ -43,11 +43,11 @@ backend https_terminated
   server self 127.0.0.1:4433
 
 backend k8s_passthrough
-  server server1 192.168.1.94:443
+  server self 127.0.0.1:443
 
 backend hass
   server server1 192.168.1.217:8123 check
 
 backend letsencrypt
   mode http
-  server server1 localhost:9999
+  server self localhost:9999
