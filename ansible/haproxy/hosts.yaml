@@ -6,7 +6,11 @@ all:
             letsencrypt_email: ENC[AES256_GCM,data:L5ZbXmZb5mVLMN+F+wey0ja9c8G3l1MsJI9GR2XJW5Oy,iv:5vXr5VxU1XZj++0/Df6BUhsL3e5NZPGPvjMdyz3QagM=,tag:KIsOf3zbYlzSJC2srQvXng==,type:str]
             certbot_domains:
                 - ENC[AES256_GCM,data:zd2jKPDbNaBeXMIbssbU,iv:ak8pVs5HB2dcz7NqiK261mks8Ua12KgCXtUrlkkiwMM=,tag:bWV0sQEpXOYf3Wyt7hIMyA==,type:str]
-                - ENC[AES256_GCM,data:ltndFaCy227jZ2w83rxhdw==,iv:QrJwy6c8/8EVOXZIhgiNM7uUAkNm2Tc2GFqRKEdS72Y=,tag:LjMzULx1S/YqPr85yEi6qA==,type:str]
+            k8s_passthrough_domains:
+                - app.jutonz.com
+                - block.jutonz.com
+                - contacts.jutonz.com
+                - jutonz.com
 sops:
     age:
         - recipient: age1fs9c9xejszarcv6c3r62efnkny06yvl6zgjlhemmyvyd2t8zq40sqtnpvg
@@ -18,7 +22,7 @@ sops:
             VkdOL3pyV2loVHMwa0tXRWpGVGtqUlEK5GxPsA3U4WMPe49QxzBawa1q2mzuVDyD
             VqGz49gwVqKqYmTK3+SeVRzTrKSaJ4+cNUJKuh5oc0fVNlJMQDDrfw==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2026-01-06T23:17:17Z"
-    mac: ENC[AES256_GCM,data:xiOXUrEe/dPnyjW6ZYLhZdAqyEDDr0gz80q38QIZavS5cfEj3Z8ath1h77hL1ow2HeiTK5w+4SGK/bXecxtizDrvKZ63nlYq/a3zXN69y20SUQ3YFGGoncO1Hv6gpWcU9TIDtForxFGZ2yUGp/Lv7TTfkGORjHHEE6b3qhL0XOs=,iv:Qxc6/XgqtWg9AGIKPb84DQKLXhevjksdRy3QAC5RS9I=,tag:LJTpQ6g5hsJ1UGEKGDAIZg==,type:str]
+    lastmodified: "2026-01-07T14:20:54Z"
+    mac: ENC[AES256_GCM,data:+MpI7mDFCtpnwcVJNQFoGAlMrm0xJT7w6lcwOykKlkEsajNAMoaCGqtGPpV5XUg6YZ7RO9bzd2tlAn01sLWE/GPSG1ChJXDM8l/4S0fzbmuxx+fQsKGGdiXaiysEMnIvjtE+wPQPUbwHhjQ3xpTAV5vNuVd/ZyVhdJEnctZNMZw=,iv:QT3TTn6EzpA0+01WlqWGQu2lrVDhdJNdmdshsUV/EEc=,tag:+p8DvTocNzgB4ceIvgmKsQ==,type:str]
     encrypted_regex: ^(letsencrypt_email|certbot_domains)$
     version: 3.11.0

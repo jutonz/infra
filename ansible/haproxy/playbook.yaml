@@ -2,12 +2,6 @@
 - name: Ensure Haproxy is installed
   hosts: all
   become: true
-  vars:
-    k8s_passthrough_domains:
-      - app.jutonz.com
-      - block.jutonz.com
-      - contacts.jutonz.com
-      - jutonz.com
   tasks:
     - name: Install snapd
       ansible.builtin.apt:
