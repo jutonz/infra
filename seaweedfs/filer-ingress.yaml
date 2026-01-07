@@ -20,4 +20,4 @@ spec:
           service:
             name: filer
             port:
-              name: http
+              name: s3
