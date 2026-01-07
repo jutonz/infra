@@ -3,26 +3,26 @@ all:
         mini:
             ansible_host: mini
             ansible_user: root
-            letsencrypt_email: ENC[AES256_GCM,data:L5ZbXmZb5mVLMN+F+wey0ja9c8G3l1MsJI9GR2XJW5Oy,iv:5vXr5VxU1XZj++0/Df6BUhsL3e5NZPGPvjMdyz3QagM=,tag:KIsOf3zbYlzSJC2srQvXng==,type:str]
-            certbot_domains:
-                - ENC[AES256_GCM,data:zd2jKPDbNaBeXMIbssbU,iv:ak8pVs5HB2dcz7NqiK261mks8Ua12KgCXtUrlkkiwMM=,tag:bWV0sQEpXOYf3Wyt7hIMyA==,type:str]
+            letsencrypt_email: ENC[AES256_GCM,data:+vCXkYGUFtwTgR0hBJNsVuyN232Vpy38sJJFULhl7BAz,iv:YT5/LSXOVpty6UWzNsBw+WbJM9lRsWjdphbbpU60FVk=,tag:f9HVg6dBvhhlB6yI7PvLRw==,type:str]
+            certbot_domains: []
             k8s_passthrough_domains:
-                - app.jutonz.com
-                - block.jutonz.com
-                - contacts.jutonz.com
-                - jutonz.com
+                - ENC[AES256_GCM,data:JIlHw+jAWGiIYo35W78=,iv:IldOoYtrSy47vs0D+UEHjZ3wM/InfwDb5IfDPkrhFtU=,tag:qMg28BlGqgqVe3i8cAHkpg==,type:str]
+                - ENC[AES256_GCM,data:65Iv4gsDq2lijOHvIlqf6Q==,iv:3pCZAIydAQr4bgzczRiZJNpG3mF8DIdBAkkkcMtRD9s=,tag:+FKTsYdUaQhSZU/9ll3sug==,type:str]
+                - ENC[AES256_GCM,data:+lxUftiC9M+UwpMMWwLomQyt7A==,iv:xkG0JjjlzJPnP7AuLpgbnwB0riLI2hH68uhcijvF+QM=,tag:tk8S7ofsc5zgR+X8pr6ytw==,type:str]
+                - ENC[AES256_GCM,data:g98bS0cp4/TFOb4UuROm,iv:nMNzNDLXF5qlBY9uco/JvrVjqioS3kwKc2p+VhdATF4=,tag:rOCjRfmXI4rK79w/Utn3Zw==,type:str]
+                - ENC[AES256_GCM,data:Vd6DBWIocsnnvw==,iv:eQwTxRypjHoCWOCdZr3ZVO2/uJPTli7L1STqCMdeMBs=,tag:MihMQAqsV5ApkfBQUSps/A==,type:str]
 sops:
     age:
         - recipient: age1fs9c9xejszarcv6c3r62efnkny06yvl6zgjlhemmyvyd2t8zq40sqtnpvg
           enc: |
             -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBEMEtGMU93TFFyOCthcFhY
-            a29YYTlCTnVtdUpjM2x0RExsVGQxdjhONGx3Cm5TbGRsSjdIVzBBbFAraG9BZWNs
-            Nkl6OWhUbW5uaWJJeW52eTFwL3p1Q28KLS0tIHNxODNuemhRTGxNSlhrOE1hWTY2
-            VkdOL3pyV2loVHMwa0tXRWpGVGtqUlEK5GxPsA3U4WMPe49QxzBawa1q2mzuVDyD
-            VqGz49gwVqKqYmTK3+SeVRzTrKSaJ4+cNUJKuh5oc0fVNlJMQDDrfw==
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBENHZucnNyR1VXS25RcVRq
+            UnNOV1NmZXZqZFNSei9rWklHd2JYNjRaMzNZCk4yaFd4SnRnc21UdUkvRjJzWW1F
+            VldrQktsN1MrQ3gzZ2RkWUFaUXNvcmMKLS0tIGhUS3VaUXZGYnE5QkFFUkRPTDJj
+            Y3p1SjhFdHhNMlA3Ulo0TllmYWllN2sK/LxmIO2kYdPAEXWnH51zUvxhB53rgGur
+            JooMOg+1tp10bICH4zMK5XnQKkg+CtmxuSW8235IeHwYI1yoeZeKUQ==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2026-01-07T14:20:54Z"
-    mac: ENC[AES256_GCM,data:+MpI7mDFCtpnwcVJNQFoGAlMrm0xJT7w6lcwOykKlkEsajNAMoaCGqtGPpV5XUg6YZ7RO9bzd2tlAn01sLWE/GPSG1ChJXDM8l/4S0fzbmuxx+fQsKGGdiXaiysEMnIvjtE+wPQPUbwHhjQ3xpTAV5vNuVd/ZyVhdJEnctZNMZw=,iv:QT3TTn6EzpA0+01WlqWGQu2lrVDhdJNdmdshsUV/EEc=,tag:+p8DvTocNzgB4ceIvgmKsQ==,type:str]
-    encrypted_regex: ^(letsencrypt_email|certbot_domains)$
+    lastmodified: "2026-01-07T15:07:54Z"
+    mac: ENC[AES256_GCM,data:N7/u0aWF71h+B2XLJHh/R2vzKZZ7ZtgKtHwiTspnP9ARDHYCLi8XQtoEPMZTRbB2ShkTlxoO87bMAeTNNEigEquhmXl12rjAW6dJuC1KvJ5se57T7EWfrmZd7rikSt1x/35C4PZYIDU4tVWqhMhagUTw/0xBZxdvJeFnBmW8JYk=,iv:ppKjgBYPi8ODy+mC4GAYAHBgW/t1LtuOaz6pcL5q2/s=,tag:WyLkciJAIM6AaojgS+bTEg==,type:str]
+    encrypted_regex: ^(letsencrypt_email|certbot_domains|k8s_passthrough_domains)$
     version: 3.11.0
