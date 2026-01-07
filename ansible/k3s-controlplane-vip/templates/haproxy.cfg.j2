@@ -1,0 +1,25 @@
+global
+  log /dev/log local0
+  log /dev/log local1 notice
+  daemon
+  maxconn 2048
+
+defaults
+  log global
+  mode tcp
+  option tcplog
+  timeout connect 5s
+  timeout client  50s
+  timeout server  50s
+
+frontend k3s-frontend
+  bind *:6444
+  default_backend k3s-backend
+
+backend k3s-backend
+  balance roundrobin
+  option tcp-check
+  default-server inter 10s downinter 5s
+{% for server in k3s_servers %}
+  server {{ server.name }} {{ server.ip }}:6443 check
+{% endfor %}

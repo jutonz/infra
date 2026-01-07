@@ -3,50 +3,12 @@
   hosts: all
   become: true
   tasks:
-    - name: Install snapd
+    - name: Install packages
       ansible.builtin.apt:
-        name: snapd
-        state: present
-        update_cache: true
-
-    - name: Ensure snap core is up to date
-      ansible.builtin.command: snap install core
-      register: core_snap
-      changed_when: "'already installed' not in core_snap.stdout"
-
-    - name: Refresh core snap
-      ansible.builtin.command: snap refresh core
-      changed_when: false
-
-    - name: Install certbot via snap
-      ansible.builtin.command: snap install --classic certbot
-      args:
-        creates: /snap/bin/certbot
-
-    - name: Ensure certbot symlink exists
-      ansible.builtin.file:
-        src: /snap/bin/certbot
-        dest: /usr/bin/certbot
-        state: link
-        force: true
-
-    - name: Create hooks directory
-      ansible.builtin.file:
-        path: /etc/letsencrypt/renewal-hooks/deploy
-        state: directory
-        owner: root
-        group: root
-        mode: "0755"
-
-    - name: Install haproxy hook
-      ansible.builtin.copy:
-        src: ./letsencrypt/renewal-hooks/deploy/restart-haproxy.sh
-        dest: /etc/letsencrypt/renewal-hooks/deploy/restart-haproxy.sh
-        mode: "0755"
-
-    - name: Install Haproxy
-      ansible.builtin.apt:
-        name: haproxy
+        name:
+          - haproxy
+          - keepalived
+          - psmisc # for `killall -0` check
         state: present
 
     - name: Create empty certs dir
@@ -80,31 +42,26 @@
         group: root
         mode: "0600"
 
-    - name: Install config file
+    - name: Install haproxy config file
       ansible.builtin.template:
-        src: ./haproxy.cfg.j2
+        src: ./files/haproxy.cfg.j2
         dest: /etc/haproxy/haproxy.cfg
         mode: "0644"
 
-    - name: Verify config
+    - name: Verify haproxy config
       ansible.builtin.command: /usr/sbin/haproxy -f /etc/haproxy/haproxy.cfg -c
       changed_when: false
+
+    # - name: Install keepalived config
+    #   ansible.builtin.template:
+    #     src: ./files/keepalived.conf.j2
+    #     dest: /etc/keepalived/keepalived.conf
+    #     owner: root
+    #     group: root
+    #     mode: "0644"
+    #   notify: Restart keepalived
 
     - name: Reload haproxy
       ansible.builtin.systemd:
         name: haproxy
         state: reloaded
-
-    - name: Install certificates
-      ansible.builtin.shell: |
-        certbot certonly \
-          --standalone \
-          --http-01-port=9999 \
-          --non-interactive \
-          --agree-tos \
-          --email={{ letsencrypt_email }} \
-          --deploy-hook "/etc/letsencrypt/renewal-hooks/deploy/restart-haproxy.sh" \
-          -d {{ item }}
-      loop: "{{ certbot_domains }}"
-      args:
-        creates: "/etc/haproxy/certs/{{ item }}.pem"

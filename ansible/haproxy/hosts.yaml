@@ -3,8 +3,6 @@ all:
         mini:
             ansible_host: mini
             ansible_user: root
-            letsencrypt_email: ENC[AES256_GCM,data:+vCXkYGUFtwTgR0hBJNsVuyN232Vpy38sJJFULhl7BAz,iv:YT5/LSXOVpty6UWzNsBw+WbJM9lRsWjdphbbpU60FVk=,tag:f9HVg6dBvhhlB6yI7PvLRw==,type:str]
-            certbot_domains: []
             k8s_passthrough_domains:
                 - ENC[AES256_GCM,data:JIlHw+jAWGiIYo35W78=,iv:IldOoYtrSy47vs0D+UEHjZ3wM/InfwDb5IfDPkrhFtU=,tag:qMg28BlGqgqVe3i8cAHkpg==,type:str]
                 - ENC[AES256_GCM,data:65Iv4gsDq2lijOHvIlqf6Q==,iv:3pCZAIydAQr4bgzczRiZJNpG3mF8DIdBAkkkcMtRD9s=,tag:+FKTsYdUaQhSZU/9ll3sug==,type:str]
@@ -22,7 +20,7 @@ sops:
             Y3p1SjhFdHhNMlA3Ulo0TllmYWllN2sK/LxmIO2kYdPAEXWnH51zUvxhB53rgGur
             JooMOg+1tp10bICH4zMK5XnQKkg+CtmxuSW8235IeHwYI1yoeZeKUQ==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2026-01-07T15:07:54Z"
-    mac: ENC[AES256_GCM,data:N7/u0aWF71h+B2XLJHh/R2vzKZZ7ZtgKtHwiTspnP9ARDHYCLi8XQtoEPMZTRbB2ShkTlxoO87bMAeTNNEigEquhmXl12rjAW6dJuC1KvJ5se57T7EWfrmZd7rikSt1x/35C4PZYIDU4tVWqhMhagUTw/0xBZxdvJeFnBmW8JYk=,iv:ppKjgBYPi8ODy+mC4GAYAHBgW/t1LtuOaz6pcL5q2/s=,tag:WyLkciJAIM6AaojgS+bTEg==,type:str]
+    lastmodified: "2026-01-07T16:55:41Z"
+    mac: ENC[AES256_GCM,data:fL4SKG8f0eyRCy1HGgSXyKqpbYkRFs1XD0EKIVEM4b3WNKta3LWHwbxBfUABxjWCH3rYh6kikUV730/d6cguuBy/fkWPYjvdWI5DPFJEeM7smcyyQtl1oyr5hgJFBYCGK3p/A0MA20LILlha+54XVmRjYDJ+IEXfVqW8xgZDOeA=,iv:IyD3iYLCt2QygAwlRREGC9qg10HbwBeHpMXGUYIItBs=,tag:0Aj8ZN8yd92y0arJXotH0Q==,type:str]
     encrypted_regex: ^(letsencrypt_email|certbot_domains|k8s_passthrough_domains)$
     version: 3.11.0

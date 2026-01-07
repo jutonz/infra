@@ -1,0 +1,16 @@
+---
+# VIP for the k3s API load balancer
+k3s_vip_cidr: 192.168.1.21/24
+
+# VRRP configuration
+k3s_vrrp_id: 51
+k3s_lb_interface: ens18
+
+# k3s API backends
+k3s_servers:
+  - name: mini
+    ip: 192.168.1.94
+  - name: cary
+    ip: 192.168.1.100
+  - name: littlebox
+    ip: 192.168.1.217

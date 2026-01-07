@@ -1,0 +1,22 @@
+global_defs {
+  enable_script_security
+  script_user root
+}
+
+vrrp_script chk_haproxy {
+  script "killall -0 haproxy"
+  interval 2
+}
+
+vrrp_instance haproxy-vip {
+  interface {{ k3s_lb_interface }}
+  state {{ vrrp_state | default('BACKUP') }}
+  priority {{ vrrp_priority | default(100) }}
+  virtual_router_id {{ k3s_vrrp_id }}
+  virtual_ipaddress {
+    {{ k3s_vip_cidr }}
+  }
+  track_script {
+    chk_haproxy
+  }
+}
