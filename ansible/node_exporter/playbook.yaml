@@ -5,7 +5,6 @@
   vars:
     # https://github.com/prometheus/node_exporter/releases
     version: "1.10.2"
-    textfile_dir: /var/lib/node_exporter/textfile_collector
     upgradable_push_script_path: /usr/local/bin/prom_apt_upgradable_push.sh
     pushgateway_url: https://pushgateway.home.jutonz.com
   tasks:
@@ -28,11 +27,11 @@
         remote_src: true
         mode: "0755"
 
-    - name: Create textfile collector directory
-      ansible.builtin.file:
-        path: "{{ textfile_dir }}"
-        state: directory
-        mode: "0755"
+    - name: Ensure curl is installed
+      ansible.builtin.apt:
+        name: curl
+        state: present
+        update_cache: false
 
     - name: Install apt upgrade metrics push script
       ansible.builtin.template:
@@ -73,7 +72,6 @@
       vars:
         command_line_args:
           - --web.listen-address=:9100
-          - --collector.textfile.directory={{ textfile_dir }}
 
     - name: Enable and start service
       ansible.builtin.systemd:
