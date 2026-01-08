@@ -1,0 +1,16 @@
+#!/bin/bash
+set -euo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+
+UPGRADABLE=$(apt-get -s dist-upgrade | awk '/^Inst / { count++ } END { print count+0 }')
+
+METRICS=$(cat <<EOF_METRICS
+# HELP apt_upgradable_packages Number of apt packages that can be upgraded
+# TYPE apt_upgradable_packages gauge
+apt_upgradable_packages ${UPGRADABLE}
+EOF_METRICS
+)
+
+printf "%s\n" "${METRICS}" | curl -XPOST --fail --silent --show-error --data-binary @- \
+  "{{ pushgateway_url }}/metrics/job/apt_upgradable/instance/$(hostname)"

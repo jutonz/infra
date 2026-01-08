@@ -1,0 +1,9 @@
+[Unit]
+Description=Run apt-get update for Prometheus apt metrics
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=DEBIAN_FRONTEND=noninteractive
+ExecStart=/usr/bin/apt-get -qq update

@@ -1,0 +1,8 @@
+[Unit]
+Description=Publish apt upgradable metrics to Pushgateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart={{ upgradable_push_script_path }}
