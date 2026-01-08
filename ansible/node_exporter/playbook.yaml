@@ -54,15 +54,15 @@
 
     # NOTE: See logs w/ `journalctl -u prom-apt-upgradable.service`
     - name: Install apt upgradable metrics systemd service
-      ansible.builtin.copy:
-        src: ./files/prom-apt-upgradable.service
+      ansible.builtin.template:
+        src: ./files/prom-apt-upgradable.service.j2
         dest: /etc/systemd/system/prom-apt-upgradable.service
         mode: "0644"
 
     - name: Install apt hook for upgradable metrics
       ansible.builtin.copy:
         src: ./files/99-prom-apt-upgradable.conf
-        dest: /etc/apt/apt.conf.d/99-prom-apt-upgradable
+        dest: /etc/apt/apt.conf.d/99-prom-apt-upgradable.conf
         mode: "0644"
 
     - name: Install service

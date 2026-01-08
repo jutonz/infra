@@ -12,5 +12,5 @@ apt_upgradable_packages ${UPGRADABLE}
 EOF_METRICS
 )
 
-printf "%s\n" "${METRICS}" | curl --fail --silent --show-error --data-binary @- \
+printf "%s\n" "${METRICS}" | curl -XPOST --fail --silent --show-error --data-binary @- \
   "{{ pushgateway_url }}/metrics/job/apt_upgradable/instance/$(hostname)"
