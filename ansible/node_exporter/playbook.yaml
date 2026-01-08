@@ -6,7 +6,8 @@
     # https://github.com/prometheus/node_exporter/releases
     version: "1.10.2"
     textfile_dir: /var/lib/node_exporter/textfile_collector
-    upgradable_script_path: /usr/local/bin/prom_apt_upgradable.sh
+    upgradable_push_script_path: /usr/local/bin/prom_apt_upgradable_push.sh
+    pushgateway_url: https://pushgateway.home.jutonz.com
   tasks:
     - name: Download binary
       ansible.builtin.get_url:
@@ -33,19 +34,36 @@
         state: directory
         mode: "0755"
 
-    - name: Install apt upgrade metrics script
-      ansible.builtin.copy:
-        src: ./files/prom_apt_upgradable.sh
-        dest: "{{ upgradable_script_path }}"
+    - name: Install apt upgrade metrics push script
+      ansible.builtin.template:
+        src: ./files/prom_apt_upgradable_push.sh.j2
+        dest: "{{ upgradable_push_script_path }}"
         mode: "0755"
 
-    - name: Cron job for apt upgrade metrics
-      ansible.builtin.cron:
-        name: "Generate Prometheus apt update metrics"
-        user: root
-        minute: "0"
-        hour: "*/6"
-        job: "{{ upgradable_script_path }} > {{ textfile_dir }}/apt_upgradable.prom"
+    - name: Install apt update systemd service
+      ansible.builtin.copy:
+        src: ./files/prom-apt-update.service
+        dest: /etc/systemd/system/prom-apt-update.service
+        mode: "0644"
+
+    - name: Install apt update systemd timer
+      ansible.builtin.copy:
+        src: ./files/prom-apt-update.timer
+        dest: /etc/systemd/system/prom-apt-update.timer
+        mode: "0644"
+
+    # NOTE: See logs w/ `journalctl -u prom-apt-upgradable.service`
+    - name: Install apt upgradable metrics systemd service
+      ansible.builtin.copy:
+        src: ./files/prom-apt-upgradable.service
+        dest: /etc/systemd/system/prom-apt-upgradable.service
+        mode: "0644"
+
+    - name: Install apt hook for upgradable metrics
+      ansible.builtin.copy:
+        src: ./files/99-prom-apt-upgradable.conf
+        dest: /etc/apt/apt.conf.d/99-prom-apt-upgradable
+        mode: "0644"
 
     - name: Install service
       ansible.builtin.template:
@@ -61,5 +79,12 @@
       ansible.builtin.systemd:
         name: node_exporter
         state: restarted
+        enabled: true
+        daemon_reload: true
+
+    - name: Enable and start apt update timer
+      ansible.builtin.systemd:
+        name: prom-apt-update.timer
+        state: started
         enabled: true
         daemon_reload: true
