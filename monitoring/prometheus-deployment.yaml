@@ -28,7 +28,7 @@ spec:
         io.kompose.service: prometheus
     spec:
       containers:
-        - image: prom/prometheus:v3.8.1
+        - image: prom/prometheus:v3.9.1
           name: prometheus
           args:
             # Defaults from Dockerfile CMD
