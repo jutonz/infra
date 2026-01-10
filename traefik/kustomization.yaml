@@ -3,3 +3,4 @@ kind: Kustomization
 namespace: kube-system
 resources:
   - ./https-redirect-middleware.yaml
+  - ./accesslogs.yaml
