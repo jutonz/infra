@@ -28,6 +28,7 @@ spec:
           args:
             - master
             - "-port=9333"
+            - "-volumeSizeLimitMB=10000"
           ports:
             - containerPort: 9333
               protocol: TCP
