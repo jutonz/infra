@@ -23,7 +23,7 @@ spec:
         io.kompose.service: master
     spec:
       containers:
-        - image: chrislusf/seaweedfs:4.06
+        - image: chrislusf/seaweedfs:4.07
           name: master
           args:
             - master
