@@ -1,0 +1,16 @@
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: calibre-web
+  labels:
+    kubernetes.io/service-name: calibre-web
+addressType: IPv4
+ports:
+  - name: http
+    port: 8083
+    protocol: TCP
+endpoints:
+  - addresses:
+      - 192.168.1.94
+    conditions:
+      ready: true
