@@ -1,5 +1,5 @@
 [Unit]
-Description=Run apt-get update every 6 hours for Prometheus apt metrics
+Description=Run apt-get update every 24 hours for Prometheus apt metrics
 
 [Timer]
 OnCalendar=*-*-* 00:00:00
