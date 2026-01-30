@@ -33,9 +33,12 @@ spec:
               value: "false"
             - name: DIUN_WATCH_WORKERS
               value: "20"
-            - name: DIUN_WATCH_SCHEDULE
               # fridays
+            - name: DIUN_WATCH_SCHEDULE
               value: "0 0 * * 5"
+              # only notify of new tags, not updates to tags
+            - name: DIUN_DEFAULTS_NOTIFYON
+              value: "new"
             - name: DIUN_PROVIDERS_KUBERNETES
               value: "true"
             - name: DIUN_PROVIDERS_DOCKER
