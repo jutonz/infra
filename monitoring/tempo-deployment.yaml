@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         # https://github.com/grafana/tempo/releases
-        - image: grafana/tempo:2.9.1
+        - image: grafana/tempo:2.10.0
           name: tempo
           args:
             - -config.file=/etc/tempo-config.yaml
