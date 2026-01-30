@@ -86,3 +86,16 @@
         state: started
         enabled: true
         daemon_reload: true
+
+    - name: Install apt upgradable metrics systemd timer
+      ansible.builtin.copy:
+        src: ./files/prom-apt-upgradable.timer
+        dest: /etc/systemd/system/prom-apt-upgradable.timer
+        mode: "0644"
+
+    - name: Enable and start apt upgradable timer
+      ansible.builtin.systemd:
+        name: prom-apt-upgradable.timer
+        state: started
+        enabled: true
+        daemon_reload: true
