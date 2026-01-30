@@ -2,7 +2,7 @@
 Description=Push apt upgradable metrics to prometheus
 
 [Timer]
-OnCalendar=*-*-* 00:30:00
+OnCalendar=*-*-* *:30:00
 Persistent=true
 Unit=prom-apt-upgradable.service
 
