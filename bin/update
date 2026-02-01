@@ -77,6 +77,12 @@ kustomize build \
 kustomize build \
   --enable-alpha-plugins \
   --enable-exec \
+  calibre-web \
+| kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
   cert-manager \
 | kubectl apply -f -
 
