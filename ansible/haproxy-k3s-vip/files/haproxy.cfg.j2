@@ -24,12 +24,14 @@ frontend https
 
 frontend k8s
   bind :64430
+  timeout client 1h
   default_backend k8s-control-plane
 
 backend k8s_passthrough
   server self 127.0.0.1:443
 
 backend k8s-control-plane
+  timeout server 1h
   balance roundrobin
   option tcp-check
   default-server inter 10s downinter 5s
