@@ -14,7 +14,7 @@ spec:
         app: volume
     spec:
       containers:
-        - image: chrislusf/seaweedfs:4.07
+        - image: chrislusf/seaweedfs:4.13
           name: volume
           args:
             - volume
