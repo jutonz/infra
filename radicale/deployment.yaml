@@ -31,7 +31,7 @@ spec:
         fsGroup: 2999
       containers:
         # https://github.com/tomsquest/docker-radicale/releases
-        - image: tomsquest/docker-radicale:3.6.0.0
+        - image: tomsquest/docker-radicale:3.6.1.0
           livenessProbe:
             exec:
               command:
