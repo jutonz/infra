@@ -35,6 +35,9 @@ spec:
               mountPath: /etc/grafana/grafana.ini
               subPath: grafana.ini
               readOnly: true
+            - name: alerts-provisioning
+              mountPath: /etc/grafana/provisioning/alerting
+              readOnly: true
       restartPolicy: Always
       volumes:
         - name: data
@@ -43,3 +46,6 @@ spec:
         - name: config
           secret:
             secretName: config
+        - name: alerts-provisioning
+          configMap:
+            name: seaweedfs-alerts
