@@ -9,4 +9,4 @@
         user: root
         minute: "0"
         hour: "0"
-        job: "/usr/bin/docker system prune -af"
+        job: "{{ docker_path }} system prune -af"

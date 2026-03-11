@@ -4,9 +4,12 @@ all:
     cary:
       ansible_host: cary
       ansible_user: root
+      docker_path: /usr/bin/docker
     littlebox:
       ansible_host: littlebox
       ansible_user: root
+      docker_path: /snap/bin/docker
     mini:
       ansible_host: mini
       ansible_user: root
+      docker_path: /usr/bin/docker
