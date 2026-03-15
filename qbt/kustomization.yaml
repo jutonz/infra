@@ -15,3 +15,6 @@ resources:
   - ./sonarr-service.yaml
   - ./sonarr-endpointslice.yaml
   - ./sonarr-ingress.yaml
+  - ./nzb-service.yaml
+  - ./nzb-endpointslice.yaml
+  - ./nzb-ingress.yaml
