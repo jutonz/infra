@@ -28,7 +28,7 @@ data:
       - orgId: 1
         name: seaweedfs
         folder: Infrastructure
-        interval: 1m
+        interval: 5m
         rules:
           - uid: seaweedfs-volume-usage
             title: SeaweedFS Volume Nearly Full
