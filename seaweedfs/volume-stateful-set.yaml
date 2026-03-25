@@ -20,7 +20,7 @@ spec:
             - volume
             - "-mserver=master:9333"
             - "-dir=/data"
-            - "-max=256"
+            - "-max=0"
             - "-port=8080"
           ports:
             - containerPort: 8080
@@ -31,9 +31,6 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: data
-        # labels:
-        #   recurring-job.longhorn.io/source: enabled
-        #   recurring-job-group.longhorn.io/s3-backup: enabled
       spec:
         accessModes:
           - ReadWriteOnce
