@@ -7,6 +7,5 @@ resources:
 - ./deployment.yaml
 - ./service.yaml
 - ./ingress.yaml
-- ./alerts/seaweedfs-alerts-configmap.yaml
 generators:
 - ./secret-generator.yaml
