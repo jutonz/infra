@@ -1,0 +1,20 @@
+---
+- name: Configure nodes for Longhorn
+  hosts: all
+  become: true
+  tasks:
+    - name: Blacklist Longhorn devices from multipathd
+      ansible.builtin.copy:
+        src: files/multipath.conf
+        dest: /etc/multipath.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart multipathd
+
+  handlers:
+    - name: Restart multipathd
+      ansible.builtin.systemd:
+        name: multipathd
+        state: restarted
+        daemon_reload: true
