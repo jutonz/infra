@@ -4,7 +4,7 @@
   become: true
   vars:
     # see https://github.com/badaix/snapcast/tags
-    version: "0.31.0"
+    version: "0.35.0"
   tasks:
     - name: Install dependencies
       ansible.builtin.apt:
@@ -12,13 +12,17 @@
           - alsa-utils
           - avahi-daemon
           - build-essential
+          - ccache
           - cmake
+          - cmake-format
           - git
           - libasound2-dev
           - libavahi-client-dev
           - libboost-all-dev
           - libexpat1-dev
+          - ninja-build
           - libflac-dev
+          - libjack-dev
           - libopus-dev
           - libpulse-dev
           - libsoxr-dev
@@ -60,6 +64,17 @@
         chdir: /home/jutonz/code/badaix/snapcast/build
       when: installed_check.rc != 0
       changed_when: false
+
+    - name: Check if snapclient service exists
+      ansible.builtin.stat:
+        path: /usr/lib/systemd/system/snapclient.service
+      register: service_file
+
+    - name: Stop service before updating binary
+      ansible.builtin.systemd:
+        name: snapclient
+        state: stopped
+      when: installed_check.rc != 0 and service_file.stat.exists
 
     - name: Install binary
       ansible.builtin.command: cp /home/jutonz/code/badaix/snapcast/bin/snapclient /usr/local/bin/snapclient
