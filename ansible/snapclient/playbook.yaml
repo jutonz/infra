@@ -35,36 +35,23 @@
     - name: Build snapclient in Docker
       delegate_to: localhost
       become: false
-      community.docker.docker_container:
-        name: "{{ build_container }}"
-        image: "{{ build_image }}"
-        platform: linux/arm/v6
-        command: >
-          bash -lc "
-            apt-get update &&
-            apt-get install -y --no-install-recommends
-              build-essential cmake
-              libasound2-dev libavahi-client-dev libboost-dev libexpat1-dev
-              libflac-dev libopus-dev libsoxr-dev libssl-dev libvorbis-dev
-              libvorbisidec-dev &&
-            mkdir -p /src/build &&
-            cd /src/build &&
-            cmake .. -DBUILD_SERVER=OFF &&
-            cmake --build .
-          "
-        volumes:
-          - "{{ snapcast_src }}:/src"
-        auto_remove: false
-        detach: false
-      run_once: true
-      when: installed_check.rc != 0
-
-    - name: Remove build container
-      delegate_to: localhost
-      become: false
-      community.docker.docker_container:
-        name: "{{ build_container }}"
-        state: absent
+      ansible.builtin.shell:
+        cmd: |
+          docker run --rm --platform linux/arm/v6 \
+            -v "{{ snapcast_src }}:/src" \
+            "{{ build_image }}" \
+            bash -lc '\
+              apt-get update && \
+              apt-get install -y --no-install-recommends \
+                build-essential cmake \
+                libasound2-dev libavahi-client-dev libboost-dev libexpat1-dev \
+                libflac-dev libopus-dev libsoxr-dev libssl-dev libvorbis-dev \
+                libvorbisidec-dev && \
+              mkdir -p /src/build && \
+              cd /src/build && \
+              cmake .. -DBUILD_SERVER=OFF && \
+              cmake --build . \
+            '
       run_once: true
       when: installed_check.rc != 0
 
