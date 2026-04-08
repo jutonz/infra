@@ -6,11 +6,11 @@ all:
       ansible_host: ttv
       ansible_user: root
       clientOpts: --player=alsa -s6
+      docker_platform: linux/arm64
+      build_image: arm64v8/ubuntu:noble
     speaker:
       ansible_host: speaker
       ansible_user: jutonz
       clientOpts: -s3
-    speaker2:
-      ansible_host: speaker2
-      ansible_user: jutonz
-      clientOpts: -s3
+      docker_platform: linux/arm/v6
+      build_image: balenalib/raspberry-pi-debian:bullseye-build

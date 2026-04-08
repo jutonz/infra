@@ -3,14 +3,13 @@
   hosts: all
   become: true
   vars:
-    # see https://github.com/badaix/snapcast/tags
-    version: "0.31.0"
+    # see https://github.com/snapcast/snapcast/tags
+    version: "0.35.0"
+    build_output: /tmp/snapclient-build
   tasks:
     - name: Install dependencies
       ansible.builtin.apt:
         name:
-          - alsa-utils
-          - avahi-daemon
           - build-essential
           - cmake
           - git
@@ -28,43 +27,55 @@
         state: present
         update_cache: true
 
-    - name: Clone snapcast repo
-      ansible.builtin.git:
-        repo: https://github.com/badaix/snapcast.git
-        dest: /home/jutonz/code/badaix/snapcast
-        version: v{{ version }}
-
     - name: Check if installed
       ansible.builtin.shell: command -v snapclient && snapclient --version | grep -q "v{{ version }}"
       register: installed_check
       ignore_errors: true
       changed_when: false
 
-    - name: Create build directory
-      ansible.builtin.file:
-        dest: /home/jutonz/code/badaix/snapcast/build
-        state: directory
+    - name: Build snapclient in Docker
+      delegate_to: localhost
+      become: false
+      ansible.builtin.shell:
+        cmd: |
+          mkdir -p "{{ build_output }}/{{ inventory_hostname }}" && \
+          docker run --rm --platform {{ docker_platform }} \
+            -v "{{ build_output }}/{{ inventory_hostname }}:/out" \
+            "{{ build_image }}" \
+            bash -lc '\
+              apt-get update && \
+              apt-get install -y --no-install-recommends \
+                build-essential ca-certificates cmake git pkg-config \
+                libasound2-dev libavahi-client-dev libboost-dev libexpat1-dev \
+                libflac-dev libopus-dev libsoxr-dev libssl-dev libvorbis-dev \
+                libvorbisidec-dev && \
+              git clone --depth 1 --branch v{{ version }} https://github.com/snapcast/snapcast.git /src && \
+              mkdir -p /src/build && \
+              cd /src/build && \
+              cmake .. -DBUILD_SERVER=OFF && \
+              cmake --build . && \
+              cp /src/bin/snapclient /out/ \
+            '
+      changed_when: true
+      when: installed_check.rc != 0
+
+    - name: Check if snapclient service exists
+      ansible.builtin.stat:
+        path: /usr/lib/systemd/system/snapclient.service
+      register: service_file
+
+    - name: Stop service before updating binary
+      ansible.builtin.systemd:
+        name: snapclient
+        state: stopped
+      when: installed_check.rc != 0 and service_file.stat.exists
+
+    - name: Copy snapclient binary to host
+      ansible.builtin.copy:
+        src: "{{ build_output }}/{{ inventory_hostname }}/snapclient"
+        dest: /usr/local/bin/snapclient
         mode: "0755"
       when: installed_check.rc != 0
-
-    - name: Configure
-      ansible.builtin.command: cmake .. -DBUILD_SERVER=OFF
-      args:
-        chdir: /home/jutonz/code/badaix/snapcast/build
-      when: installed_check.rc != 0
-      changed_when: false
-
-    - name: Compile
-      ansible.builtin.command: cmake --build .
-      args:
-        chdir: /home/jutonz/code/badaix/snapcast/build
-      when: installed_check.rc != 0
-      changed_when: false
-
-    - name: Install binary
-      ansible.builtin.command: cp /home/jutonz/code/badaix/snapcast/bin/snapclient /usr/local/bin/snapclient
-      when: installed_check.rc != 0
-      changed_when: false
 
     - name: Setup service
       ansible.builtin.template:
