@@ -5,24 +5,25 @@
   vars:
     # see https://github.com/snapcast/snapcast/tags
     version: "0.35.0"
-    snapcast_src: /Users/jutonz/code/snapcast/snapcast
-    build_image: balenalib/raspberry-pi-debian:bullseye-build
-    build_container: snapclient-build
+    build_output: /tmp/snapclient-build
   tasks:
-    - name: Install runtime dependencies
+    - name: Install dependencies
       ansible.builtin.apt:
         name:
-          - alsa-utils
-          - avahi-daemon
-          - libasound2
-          - libavahi-client3
-          - libexpat1
-          - libflac8
-          - libopus0
-          - libsoxr0
-          - libssl1.1
-          - libvorbis0a
-          - libvorbisidec1
+          - build-essential
+          - cmake
+          - git
+          - libasound2-dev
+          - libavahi-client-dev
+          - libboost-all-dev
+          - libexpat1-dev
+          - libflac-dev
+          - libopus-dev
+          - libpulse-dev
+          - libsoxr-dev
+          - libssl-dev
+          - libvorbis-dev
+          - libvorbisidec-dev
         state: present
         update_cache: true
 
@@ -37,22 +38,25 @@
       become: false
       ansible.builtin.shell:
         cmd: |
-          docker run --rm --platform linux/arm/v6 \
-            -v "{{ snapcast_src }}:/src" \
+          mkdir -p "{{ build_output }}/{{ inventory_hostname }}" && \
+          docker run --rm --platform {{ docker_platform }} \
+            -v "{{ build_output }}/{{ inventory_hostname }}:/out" \
             "{{ build_image }}" \
             bash -lc '\
               apt-get update && \
               apt-get install -y --no-install-recommends \
-                build-essential cmake \
+                build-essential ca-certificates cmake git pkg-config \
                 libasound2-dev libavahi-client-dev libboost-dev libexpat1-dev \
                 libflac-dev libopus-dev libsoxr-dev libssl-dev libvorbis-dev \
                 libvorbisidec-dev && \
+              git clone --depth 1 --branch v{{ version }} https://github.com/snapcast/snapcast.git /src && \
               mkdir -p /src/build && \
               cd /src/build && \
               cmake .. -DBUILD_SERVER=OFF && \
-              cmake --build . \
+              cmake --build . && \
+              cp /src/bin/snapclient /out/ \
             '
-      run_once: true
+      changed_when: true
       when: installed_check.rc != 0
 
     - name: Check if snapclient service exists
@@ -68,7 +72,7 @@
 
     - name: Copy snapclient binary to host
       ansible.builtin.copy:
-        src: "{{ snapcast_src }}/bin/snapclient"
+        src: "{{ build_output }}/{{ inventory_hostname }}/snapclient"
         dest: /usr/local/bin/snapclient
         mode: "0755"
       when: installed_check.rc != 0
