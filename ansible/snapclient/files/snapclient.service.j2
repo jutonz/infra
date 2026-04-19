@@ -9,7 +9,7 @@ DynamicUser=no
 SupplementaryGroups=audio
 Restart=always
 RestartSec=10
-ExecStart=/usr/local/bin/snapclient --host=192.168.1.94 {{ clientOpts }}
+ExecStart=/usr/local/bin/snapclient {{ clientOpts }} tcp://192.168.1.94
 
 [Install]
 WantedBy=multi-user.target
