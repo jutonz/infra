@@ -34,4 +34,11 @@ spec:
               protocol: TCP
             - containerPort: 19333
               protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/seaweedfs
+      volumes:
+        - name: config
+          configMap:
+            name: master-config
       restartPolicy: Always
