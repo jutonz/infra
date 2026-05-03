@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: volume
+  name: volume-large
 spec:
   serviceName: volume
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: volume
@@ -37,4 +37,4 @@ spec:
         storageClassName: longhorn
         resources:
           requests:
-            storage: 50Gi
+            storage: 110Gi
