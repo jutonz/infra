@@ -4,6 +4,7 @@ namespace: seaweedfs
 resources:
 - ./namespace.yaml
 - ./master-service.yaml
+- ./master-config-map.yaml
 - ./master-deployment.yaml
 - ./volume-service.yaml
 - ./volume-stateful-set.yaml
