@@ -95,3 +95,40 @@
         state: started
         daemon_reload: true
         enabled: true
+
+    - name: Create snapserver restart service file
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/snapserver_restart.service
+        content: |
+          [Unit]
+          Description=Restart snapserver
+
+          [Service]
+          Type=oneshot
+          ExecStart=/bin/systemctl restart snapserver
+          User=root
+          Group=root
+        mode: "0644"
+
+    - name: Create snapserver restart timer file
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/snapserver_restart.timer
+        content: |
+          [Unit]
+          Description=Daily snapserver restart at 5pm Eastern
+
+          [Timer]
+          OnCalendar=*-*-* 17:00:00 America/New_York
+          Unit=snapserver_restart.service
+          Persistent=true
+
+          [Install]
+          WantedBy=timers.target
+        mode: "0644"
+
+    - name: Enable and start snapserver restart timer
+      ansible.builtin.systemd:
+        name: snapserver_restart.timer
+        state: started
+        daemon_reload: true
+        enabled: true
