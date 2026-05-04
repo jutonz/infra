@@ -14,6 +14,7 @@ all:
       hostname: cary
       exclude_paths:
         - data/
+        - nzbget/downloads/
     mini:
       ansible_host: mini
       ansible_user: root
