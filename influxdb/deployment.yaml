@@ -23,7 +23,7 @@ spec:
         io.kompose.service: influxdb
     spec:
       containers:
-        - image: influxdb:2.8.0
+        - image: influxdb:2.9.0
           name: influxdb
           ports:
             - containerPort: 8086
