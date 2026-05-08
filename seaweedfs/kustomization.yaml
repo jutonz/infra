@@ -7,7 +7,6 @@ resources:
 - ./master-config-map.yaml
 - ./master-deployment.yaml
 - ./volume-service.yaml
-- ./volume-stateful-set.yaml
 - ./volume-large-stateful-set.yaml
 - ./filer-config-map.yaml
 - ./filer-data-pvc.yaml
