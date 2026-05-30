@@ -4,8 +4,8 @@ set -ex
 set -o pipefail
 
 apply_imagecache() {
-  local name="$1"      # ImageCache resource name (and the kubectl handle)
-  local namespace="$2" # target workload namespace (informational; ImageCache lives in kube-fledged)
+  local name="$1"      # base name; the ImageCache is named ${namespace}-${name}
+  local namespace="$2" # target workload namespace (used to disambiguate ImageCache names)
   local manifest="$3"  # path to the deployment YAML
   local container="$4" # container name inside .spec.template.spec.containers
 
@@ -20,7 +20,7 @@ apply_imagecache() {
 apiVersion: kubefledged.io/v1alpha2
 kind: ImageCache
 metadata:
-  name: ${name}
+  name: ${namespace}-${name}
   namespace: kube-fledged
 spec:
   cacheSpec:
@@ -46,7 +46,7 @@ if [[ "${SKIP_CACHE:-0}" != "1" ]]; then
   apply_imagecache prometheus monitoring monitoring/prometheus-deployment.yaml prometheus
 
   kubectl wait --for=jsonpath='{.status.status}'=Succeeded \
-    imagecache/prometheus -n kube-fledged --timeout=10m
+    imagecache/monitoring-prometheus -n kube-fledged --timeout=10m
   # ----------------------------------------------------------------------
 else
   echo "SKIP_CACHE=1 — skipping kube-fledged install + image warm"
