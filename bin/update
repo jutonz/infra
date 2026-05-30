@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -ex
+set -o pipefail
 
 apply_imagecache() {
   local name="$1"      # ImageCache resource name (and the kubectl handle)
