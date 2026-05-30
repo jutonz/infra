@@ -28,24 +28,28 @@ spec:
 EOF
 }
 
-# --- kube-fledged: install + wait ---------------------------------------
-kustomize build \
-  --enable-alpha-plugins \
-  --enable-exec \
-  kube-fledged \
-| kubectl apply -f -
+if [[ "${SKIP_CACHE:-0}" != "1" ]]; then
+  # --- kube-fledged: install + wait -------------------------------------
+  kustomize build \
+    --enable-alpha-plugins \
+    --enable-exec \
+    kube-fledged \
+  | kubectl apply -f -
 
-kubectl wait --for=condition=Established \
-  crd/imagecaches.kubefledged.io --timeout=60s
+  kubectl wait --for=condition=Established \
+    crd/imagecaches.kubefledged.io --timeout=60s
 
-kubectl rollout status -n kube-fledged \
-  deployment/kubefledged-controller --timeout=2m
+  kubectl rollout status -n kube-fledged \
+    deployment/kubefledged-controller --timeout=2m
 
-apply_imagecache prometheus monitoring monitoring/prometheus-deployment.yaml prometheus
+  apply_imagecache prometheus monitoring monitoring/prometheus-deployment.yaml prometheus
 
-kubectl wait --for=jsonpath='{.status.status}'=Succeeded \
-  imagecache/prometheus -n kube-fledged --timeout=10m
-# ------------------------------------------------------------------------
+  kubectl wait --for=jsonpath='{.status.status}'=Succeeded \
+    imagecache/prometheus -n kube-fledged --timeout=10m
+  # ----------------------------------------------------------------------
+else
+  echo "SKIP_CACHE=1 — skipping kube-fledged install + image warm"
+fi
 
 kustomize build \
   --enable-alpha-plugins \
