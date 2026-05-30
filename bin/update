@@ -2,6 +2,32 @@
 
 set -ex
 
+apply_imagecache() {
+  local name="$1"      # ImageCache resource name (and the kubectl handle)
+  local namespace="$2" # target workload namespace (informational; ImageCache lives in kube-fledged)
+  local manifest="$3"  # path to the deployment YAML
+  local container="$4" # container name inside .spec.template.spec.containers
+
+  local image
+  image="$(yq eval ".spec.template.spec.containers[] | select(.name == \"${container}\") | .image" "${manifest}")"
+  if [[ -z "${image}" || "${image}" == "null" ]]; then
+    echo "apply_imagecache: could not extract image for container=${container} from ${manifest}" >&2
+    return 1
+  fi
+
+  kubectl apply -f - <<EOF
+apiVersion: kubefledged.io/v1alpha2
+kind: ImageCache
+metadata:
+  name: ${name}
+  namespace: kube-fledged
+spec:
+  cacheSpec:
+    - images:
+        - ${image}
+EOF
+}
+
 # --- kube-fledged: install + wait ---------------------------------------
 kustomize build \
   --enable-alpha-plugins \
