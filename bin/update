@@ -40,6 +40,11 @@ kubectl wait --for=condition=Established \
 
 kubectl rollout status -n kube-fledged \
   deployment/kubefledged-controller --timeout=2m
+
+apply_imagecache prometheus monitoring monitoring/prometheus-deployment.yaml prometheus
+
+kubectl wait --for=jsonpath='{.status.status}'=Succeeded \
+  imagecache/prometheus -n kube-fledged --timeout=10m
 # ------------------------------------------------------------------------
 
 kustomize build \
