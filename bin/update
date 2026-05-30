@@ -1,6 +1,87 @@
 #!/bin/bash
 
 set -ex
+set -o pipefail
+
+apply_imagecache() {
+  local name="$1"      # base name; the ImageCache is named ${namespace}-${name}
+  local namespace="$2" # target workload namespace (used to disambiguate ImageCache names)
+  local manifest="$3"  # path to the deployment YAML
+  local container="$4" # container name inside .spec.template.spec.containers
+
+  local image
+  image="$(yq eval ".spec.template.spec.containers[] | select(.name == \"${container}\") | .image" "${manifest}")"
+  if [[ -z "${image}" || "${image}" == "null" ]]; then
+    echo "apply_imagecache: could not extract image for container=${container} from ${manifest}" >&2
+    return 1
+  fi
+
+  local cache_name="${namespace}-${name}"
+
+  kubectl apply -f - <<EOF
+apiVersion: kubefledged.io/v1alpha2
+kind: ImageCache
+metadata:
+  name: ${cache_name}
+  namespace: kube-fledged
+spec:
+  cacheSpec:
+    - images:
+        - "${image}"
+EOF
+
+  # Force a fresh reconcile via the refresh-imagecache annotation.
+  # kube-fledged enqueues a refresh on the absent->present transition
+  # and clears the annotation once Processing->Succeeded completes, so
+  # polling for "annotation absent AND status=Succeeded" guarantees we
+  # observe the reconcile that ran against the spec we just applied
+  # (avoids the TOCTOU where `kubectl wait` reads the prior generation's
+  # stale Succeeded status). The pre-remove handles a partial prior run
+  # that left the annotation in place.
+  kubectl annotate imagecache "${cache_name}" -n kube-fledged \
+    kubefledged.io/refresh-imagecache- 2>/dev/null || true
+  kubectl annotate imagecache "${cache_name}" -n kube-fledged \
+    kubefledged.io/refresh-imagecache=
+
+  local deadline=$((SECONDS + 600))
+  while (( SECONDS < deadline )); do
+    local refresh status
+    refresh="$(kubectl get imagecache "${cache_name}" -n kube-fledged \
+      -o jsonpath='{.metadata.annotations.kubefledged\.io/refresh-imagecache}' 2>/dev/null || true)"
+    status="$(kubectl get imagecache "${cache_name}" -n kube-fledged \
+      -o jsonpath='{.status.status}' 2>/dev/null || true)"
+    if [[ -z "${refresh}" && "${status}" == "Succeeded" ]]; then
+      return 0
+    fi
+    if [[ -z "${refresh}" && "${status}" == "Failed" ]]; then
+      echo "apply_imagecache: ${cache_name} reconcile failed" >&2
+      return 1
+    fi
+    sleep 5
+  done
+  echo "apply_imagecache: timed out waiting for ${cache_name}" >&2
+  return 1
+}
+
+if [[ "${SKIP_CACHE:-0}" != "1" ]]; then
+  # --- kube-fledged: install + wait -------------------------------------
+  kustomize build \
+    --enable-alpha-plugins \
+    --enable-exec \
+    kube-fledged \
+  | kubectl apply -f -
+
+  kubectl wait --for=condition=Established \
+    crd/imagecaches.kubefledged.io --timeout=60s
+
+  kubectl rollout status -n kube-fledged \
+    deployment/kubefledged-controller --timeout=2m
+
+  apply_imagecache prometheus monitoring monitoring/prometheus-deployment.yaml prometheus
+  # ----------------------------------------------------------------------
+else
+  echo "SKIP_CACHE=1 — skipping kube-fledged install + image warm"
+fi
 
 kustomize build \
   --enable-alpha-plugins \
@@ -59,6 +140,12 @@ kustomize build \
 kustomize build \
   --enable-alpha-plugins \
   --enable-exec \
+  cert-manager \
+| kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
   traefik \
 | kubectl apply -f -
 
@@ -72,18 +159,6 @@ kustomize build \
   --enable-alpha-plugins \
   --enable-exec \
   hass \
-| kubectl apply -f -
-
-kustomize build \
-  --enable-alpha-plugins \
-  --enable-exec \
-  calibre-web \
-| kubectl apply -f -
-
-kustomize build \
-  --enable-alpha-plugins \
-  --enable-exec \
-  cert-manager \
 | kubectl apply -f -
 
 kustomize build \
