@@ -2,6 +2,20 @@
 
 set -ex
 
+# --- kube-fledged: install + wait ---------------------------------------
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  kube-fledged \
+| kubectl apply -f -
+
+kubectl wait --for=condition=Established \
+  crd/imagecaches.kubefledged.io --timeout=60s
+
+kubectl rollout status -n kube-fledged \
+  deployment/kubefledged-controller --timeout=2m
+# ------------------------------------------------------------------------
+
 kustomize build \
   --enable-alpha-plugins \
   --enable-exec \
