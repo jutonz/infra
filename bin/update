@@ -78,6 +78,7 @@ if [[ "${SKIP_CACHE:-0}" != "1" ]]; then
     deployment/kubefledged-controller --timeout=2m
 
   apply_imagecache prometheus monitoring monitoring/prometheus-deployment.yaml prometheus
+  apply_imagecache seaweedfs seaweedfs seaweedfs/filer-deployment.yaml filer
   # ----------------------------------------------------------------------
 else
   echo "SKIP_CACHE=1 — skipping kube-fledged install + image warm"
