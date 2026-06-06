@@ -102,11 +102,55 @@ if [[ "${SKIP_CACHE:-0}" != "1" ]]; then
   done
   echo "applied ${#applied[@]} ImageCache CRDs ($(IFS=, ; echo "${applied[*]}"))"
 
-  # Phase B (serial for now; parallelized in a follow-up commit)
+  # Phase B — parallel watch, one gum spinner per image.
+  # results_dir holds one $name.ok or $name.fail file per image, written
+  # by each background watch job with the elapsed seconds inside.
+  results_dir="$(mktemp -d)"
+  trap 'rm -rf "${results_dir}"' EXIT
+
+  declare -a PIDS
+  declare -a NAMES
+  start_ts=${SECONDS}
+
   for entry in "${IMAGES[@]}"; do
     IFS='|' read -r name namespace manifest container <<< "${entry}"
-    watch_imagecache "${namespace}" "${name}"
+    image_ref="$(yq eval ".spec.template.spec.containers[] | select(.name == \"${container}\") | .image" "${manifest}")"
+
+    (
+      job_start=${SECONDS}
+      if watch_imagecache "${namespace}" "${name}" >/dev/null 2>&1; then
+        echo "$((SECONDS - job_start))" > "${results_dir}/${name}.ok"
+      else
+        echo "$((SECONDS - job_start))" > "${results_dir}/${name}.fail"
+      fi
+    ) &
+    watcher_pid=$!
+
+    gum spin --spinner dot --title "${name}  ${image_ref}" -- \
+      bash -c "while kill -0 ${watcher_pid} 2>/dev/null; do sleep 1; done" &
+    PIDS+=("${watcher_pid}")
+    NAMES+=("${name}")
   done
+
+  # Wait for every background watcher and render its result line.
+  failed=0
+  for i in "${!PIDS[@]}"; do
+    pid="${PIDS[$i]}"
+    name="${NAMES[$i]}"
+    wait "${pid}" || true
+    if [[ -f "${results_dir}/${name}.ok" ]]; then
+      elapsed="$(cat "${results_dir}/${name}.ok")"
+      gum style --foreground 2 "✓ ${name} cached (${elapsed}s)"
+    else
+      elapsed="$(cat "${results_dir}/${name}.fail" 2>/dev/null || echo "?")"
+      gum style --foreground 1 "✗ ${name} failed (${elapsed}s)"
+      failed=$((failed + 1))
+    fi
+  done
+
+  if (( failed > 0 )); then
+    exit 1
+  fi
   set -x
   # ----------------------------------------------------------------------
 else
