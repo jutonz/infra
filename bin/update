@@ -148,6 +148,22 @@ if [[ "${SKIP_CACHE:-0}" != "1" ]]; then
     fi
   done
 
+  total_elapsed=$((SECONDS - start_ts))
+  succeeded=$(( ${#PIDS[@]} - failed ))
+
+  summary_lines=("image-cache: ${succeeded}/${#PIDS[@]} cached in ${total_elapsed}s")
+  for i in "${!PIDS[@]}"; do
+    name="${NAMES[$i]}"
+    if [[ -f "${results_dir}/${name}.ok" ]]; then
+      elapsed="$(cat "${results_dir}/${name}.ok")"
+      summary_lines+=("  ${name}  cached  ${elapsed}s")
+    else
+      elapsed="$(cat "${results_dir}/${name}.fail" 2>/dev/null || echo "?")"
+      summary_lines+=("  ${name}  FAILED  ${elapsed}s")
+    fi
+  done
+  printf '%s\n' "${summary_lines[@]}" | gum style --border normal --padding "0 1"
+
   if (( failed > 0 )); then
     exit 1
   fi
