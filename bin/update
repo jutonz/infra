@@ -10,7 +10,7 @@ IMAGES=(
   "seaweedfs|seaweedfs|seaweedfs/filer-deployment.yaml|filer"
 )
 
-apply_imagecache() {
+apply_imagecache_crd() {
   local name="$1"      # base name; the ImageCache is named ${namespace}-${name}
   local namespace="$2" # target workload namespace (used to disambiguate ImageCache names)
   local manifest="$3"  # path to the deployment YAML
@@ -19,7 +19,7 @@ apply_imagecache() {
   local image
   image="$(yq eval ".spec.template.spec.containers[] | select(.name == \"${container}\") | .image" "${manifest}")"
   if [[ -z "${image}" || "${image}" == "null" ]]; then
-    echo "apply_imagecache: could not extract image for container=${container} from ${manifest}" >&2
+    echo "apply_imagecache_crd: could not extract image for container=${container} from ${manifest}" >&2
     return 1
   fi
 
@@ -49,6 +49,13 @@ EOF
     kubefledged.io/refresh-imagecache- 2>/dev/null || true
   kubectl annotate imagecache "${cache_name}" -n kube-fledged \
     kubefledged.io/refresh-imagecache=
+}
+
+watch_imagecache() {
+  local namespace="$1" # workload namespace (used in cache_name)
+  local name="$2"      # base name
+
+  local cache_name="${namespace}-${name}"
 
   local deadline=$((SECONDS + 600))
   while (( SECONDS < deadline )); do
@@ -61,12 +68,12 @@ EOF
       return 0
     fi
     if [[ -z "${refresh}" && "${status}" == "Failed" ]]; then
-      echo "apply_imagecache: ${cache_name} reconcile failed" >&2
+      echo "watch_imagecache: ${cache_name} reconcile failed" >&2
       return 1
     fi
     sleep 5
   done
-  echo "apply_imagecache: timed out waiting for ${cache_name}" >&2
+  echo "watch_imagecache: timed out waiting for ${cache_name}" >&2
   return 1
 }
 
@@ -84,8 +91,10 @@ if [[ "${SKIP_CACHE:-0}" != "1" ]]; then
   kubectl rollout status -n kube-fledged \
     deployment/kubefledged-controller --timeout=2m
 
-  apply_imagecache prometheus monitoring monitoring/prometheus-deployment.yaml prometheus
-  apply_imagecache seaweedfs seaweedfs seaweedfs/filer-deployment.yaml filer
+  apply_imagecache_crd prometheus monitoring monitoring/prometheus-deployment.yaml prometheus
+  watch_imagecache     monitoring prometheus
+  apply_imagecache_crd seaweedfs  seaweedfs  seaweedfs/filer-deployment.yaml filer
+  watch_imagecache     seaweedfs  seaweedfs
   # ----------------------------------------------------------------------
 else
   echo "SKIP_CACHE=1 — skipping kube-fledged install + image warm"
