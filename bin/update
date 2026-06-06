@@ -3,6 +3,13 @@
 set -ex
 set -o pipefail
 
+# Images to pre-pull via kube-fledged before applying workload manifests.
+# Format: name|namespace|manifest|container
+IMAGES=(
+  "prometheus|monitoring|monitoring/prometheus-deployment.yaml|prometheus"
+  "seaweedfs|seaweedfs|seaweedfs/filer-deployment.yaml|filer"
+)
+
 apply_imagecache() {
   local name="$1"      # base name; the ImageCache is named ${namespace}-${name}
   local namespace="$2" # target workload namespace (used to disambiguate ImageCache names)
