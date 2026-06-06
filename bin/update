@@ -3,7 +3,14 @@
 set -ex
 set -o pipefail
 
-apply_imagecache() {
+# Images to pre-pull via kube-fledged before applying workload manifests.
+# Format: name|namespace|manifest|container
+IMAGES=(
+  "prometheus|monitoring|monitoring/prometheus-deployment.yaml|prometheus"
+  "seaweedfs|seaweedfs|seaweedfs/filer-deployment.yaml|filer"
+)
+
+apply_imagecache_crd() {
   local name="$1"      # base name; the ImageCache is named ${namespace}-${name}
   local namespace="$2" # target workload namespace (used to disambiguate ImageCache names)
   local manifest="$3"  # path to the deployment YAML
@@ -12,7 +19,7 @@ apply_imagecache() {
   local image
   image="$(yq eval ".spec.template.spec.containers[] | select(.name == \"${container}\") | .image" "${manifest}")"
   if [[ -z "${image}" || "${image}" == "null" ]]; then
-    echo "apply_imagecache: could not extract image for container=${container} from ${manifest}" >&2
+    echo "apply_imagecache_crd: could not extract image for container=${container} from ${manifest}" >&2
     return 1
   fi
 
@@ -42,6 +49,13 @@ EOF
     kubefledged.io/refresh-imagecache- 2>/dev/null || true
   kubectl annotate imagecache "${cache_name}" -n kube-fledged \
     kubefledged.io/refresh-imagecache=
+}
+
+watch_imagecache() {
+  local namespace="$1" # workload namespace (used in cache_name)
+  local name="$2"      # base name
+
+  local cache_name="${namespace}-${name}"
 
   local deadline=$((SECONDS + 600))
   while (( SECONDS < deadline )); do
@@ -54,16 +68,18 @@ EOF
       return 0
     fi
     if [[ -z "${refresh}" && "${status}" == "Failed" ]]; then
-      echo "apply_imagecache: ${cache_name} reconcile failed" >&2
+      echo "watch_imagecache: ${cache_name} reconcile failed" >&2
       return 1
     fi
     sleep 5
   done
-  echo "apply_imagecache: timed out waiting for ${cache_name}" >&2
+  echo "watch_imagecache: timed out waiting for ${cache_name}" >&2
   return 1
 }
 
 if [[ "${SKIP_CACHE:-0}" != "1" ]]; then
+  command -v gum >/dev/null || { echo "gum required: brew install gum" >&2; exit 1; }
+
   # --- kube-fledged: install + wait -------------------------------------
   kustomize build \
     --enable-alpha-plugins \
@@ -77,8 +93,102 @@ if [[ "${SKIP_CACHE:-0}" != "1" ]]; then
   kubectl rollout status -n kube-fledged \
     deployment/kubefledged-controller --timeout=2m
 
-  apply_imagecache prometheus monitoring monitoring/prometheus-deployment.yaml prometheus
-  apply_imagecache seaweedfs seaweedfs seaweedfs/filer-deployment.yaml filer
+  set +x
+  applied=()
+  for entry in "${IMAGES[@]}"; do
+    IFS='|' read -r name namespace manifest container <<< "${entry}"
+    apply_imagecache_crd "${name}" "${namespace}" "${manifest}" "${container}"
+    applied+=("${name}")
+  done
+  echo "applied ${#applied[@]} ImageCache CRDs ($(IFS=, ; echo "${applied[*]}"))"
+
+  # Phase B — parallel watch with a single gum spin at a time.
+  # gum spin owns the terminal, so concurrent spinners stomp each other.
+  # Background all watchers (so wall time = slowest image), then loop:
+  # spin until any sentinel file appears, print that image's result line,
+  # re-spin with an updated title showing the remaining names. Each
+  # background watcher writes ${name}.ok or ${name}.fail to results_dir
+  # with the elapsed seconds inside.
+  results_dir="$(mktemp -d)"
+  trap 'rm -rf "${results_dir}"' EXIT
+
+  declare -a PIDS
+  declare -a NAMES
+  declare -a PRINTED
+  start_ts=${SECONDS}
+
+  for entry in "${IMAGES[@]}"; do
+    IFS='|' read -r name namespace manifest container <<< "${entry}"
+    (
+      job_start=${SECONDS}
+      if watch_imagecache "${namespace}" "${name}" >/dev/null 2>&1; then
+        echo "$((SECONDS - job_start))" > "${results_dir}/${name}.ok"
+      else
+        echo "$((SECONDS - job_start))" > "${results_dir}/${name}.fail"
+      fi
+    ) &
+    PIDS+=("$!")
+    NAMES+=("${name}")
+    PRINTED+=("0")
+  done
+
+  n=${#PIDS[@]}
+  done_count=0
+  failed=0
+  while (( done_count < n )); do
+    pending_names=()
+    for i in "${!NAMES[@]}"; do
+      [[ "${PRINTED[$i]}" == "0" ]] && pending_names+=("${NAMES[$i]}")
+    done
+    title="pre-pulling $((n - done_count))/${n}: ${pending_names[*]}"
+
+    # Spin until the count of sentinel files grows past done_count.
+    gum spin --spinner dot --title "${title}" -- \
+      bash -c 'rd="$1"; target="$2"; while true; do c=$(ls "$rd" 2>/dev/null | wc -l | tr -d " "); if (( c > target )); then exit 0; fi; sleep 0.5; done' \
+      _ "${results_dir}" "${done_count}"
+
+    # Drain everything newly completed (could be more than one).
+    for i in "${!NAMES[@]}"; do
+      [[ "${PRINTED[$i]}" == "1" ]] && continue
+      name="${NAMES[$i]}"
+      if [[ -f "${results_dir}/${name}.ok" ]]; then
+        elapsed="$(cat "${results_dir}/${name}.ok")"
+        gum style --foreground 2 "✓ ${name} cached (${elapsed}s)"
+        PRINTED[$i]=1
+        done_count=$((done_count + 1))
+      elif [[ -f "${results_dir}/${name}.fail" ]]; then
+        elapsed="$(cat "${results_dir}/${name}.fail")"
+        gum style --foreground 1 "✗ ${name} failed (${elapsed}s)"
+        PRINTED[$i]=1
+        done_count=$((done_count + 1))
+        failed=$((failed + 1))
+      fi
+    done
+  done
+
+  # Reap background watchers (all should be terminal by now).
+  for pid in "${PIDS[@]}"; do wait "${pid}" || true; done
+
+  total_elapsed=$((SECONDS - start_ts))
+  succeeded=$(( ${#PIDS[@]} - failed ))
+
+  summary_lines=("image-cache: ${succeeded}/${#PIDS[@]} cached in ${total_elapsed}s")
+  for i in "${!PIDS[@]}"; do
+    name="${NAMES[$i]}"
+    if [[ -f "${results_dir}/${name}.ok" ]]; then
+      elapsed="$(cat "${results_dir}/${name}.ok")"
+      summary_lines+=("  ${name}  cached  ${elapsed}s")
+    else
+      elapsed="$(cat "${results_dir}/${name}.fail" 2>/dev/null || echo "?")"
+      summary_lines+=("  ${name}  FAILED  ${elapsed}s")
+    fi
+  done
+  printf '%s\n' "${summary_lines[@]}" | gum style --border normal --padding "0 1"
+
+  if (( failed > 0 )); then
+    exit 1
+  fi
+  set -x
   # ----------------------------------------------------------------------
 else
   echo "SKIP_CACHE=1 — skipping kube-fledged install + image warm"
