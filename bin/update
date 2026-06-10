@@ -25,6 +25,20 @@ apply_imagecache_crd() {
 
   local cache_name="${namespace}-${name}"
 
+  # If an existing ImageCache references a different image, delete it
+  # before applying. kube-fledged diffs the cacheSpec on update and
+  # schedules *delete* jobs for any image removed from the spec — those
+  # jobs can fail (e.g. when the old tag was already pruned from the
+  # node) and strand the ImageCache in Processing forever. The CR has
+  # no finalizer, so plain deletion does not trigger node-side cleanup.
+  local current_image
+  current_image="$(kubectl get imagecache "${cache_name}" -n kube-fledged \
+    -o jsonpath='{.spec.cacheSpec[0].images[0]}' 2>/dev/null || true)"
+  if [[ -n "${current_image}" && "${current_image}" != "${image}" ]]; then
+    echo "apply_imagecache_crd: ${cache_name} image changed ${current_image} -> ${image}; recreating to avoid delete jobs"
+    kubectl delete imagecache "${cache_name}" -n kube-fledged --wait=true
+  fi
+
   kubectl apply -f - <<EOF
 apiVersion: kubefledged.io/v1alpha2
 kind: ImageCache
@@ -64,7 +78,7 @@ watch_imagecache() {
       -o jsonpath='{.metadata.annotations.kubefledged\.io/refresh-imagecache}' 2>/dev/null || true)"
     status="$(kubectl get imagecache "${cache_name}" -n kube-fledged \
       -o jsonpath='{.status.status}' 2>/dev/null || true)"
-    if [[ -z "${refresh}" && "${status}" == "Succeeded" ]]; then
+    if [[ -z "${refresh}" && ( "${status}" == "Succeeded" || "${status}" == "NoImagesPulledOrDeleted" ) ]]; then
       return 0
     fi
     if [[ -z "${refresh}" && "${status}" == "Failed" ]]; then
