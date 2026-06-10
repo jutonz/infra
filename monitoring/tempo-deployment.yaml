@@ -26,7 +26,7 @@ spec:
         fsGroup: 10001
       containers:
         # https://github.com/grafana/tempo/releases
-        - image: grafana/tempo:3.0.0
+        - image: grafana/tempo:3.0.2
           name: tempo
           args:
             - -config.file=/etc/tempo-config.yaml
