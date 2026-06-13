@@ -16,12 +16,18 @@ spec:
       containers:
         - image: chrislusf/seaweedfs:4.33
           name: volume
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           args:
             - volume
             - "-mserver=master:9333"
             - "-dir=/data"
             - "-max=0"
             - "-port=8080"
+            - "-publicUrl=$(POD_NAME).volume:8080"
           ports:
             - containerPort: 8080
             - containerPort: 18080
