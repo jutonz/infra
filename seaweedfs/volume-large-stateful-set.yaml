@@ -27,7 +27,8 @@ spec:
             - "-dir=/data"
             - "-max=0"
             - "-port=8080"
-            - "-publicUrl=$(POD_NAME).volume:8080"
+            - "-ip=$(POD_NAME).volume"
+            - "-ip.bind=0.0.0.0"
           ports:
             - containerPort: 8080
             - containerPort: 18080
