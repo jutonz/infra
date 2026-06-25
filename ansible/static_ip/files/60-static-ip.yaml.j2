@@ -1,0 +1,18 @@
+# Managed by ansible (static_ip playbook). Do not edit by hand.
+# Pins a static IP so a DHCP renewal/NIC hiccup can't black-hole the node.
+network:
+  version: 2
+  ethernets:
+    {{ static_ip_interface }}:
+      dhcp4: false
+      dhcp6: false
+      addresses:
+        - {{ static_ip_address }}
+      routes:
+        - to: default
+          via: {{ static_ip_gateway }}
+      nameservers:
+        addresses:
+{% for ns in static_ip_nameservers %}
+          - {{ ns }}
+{% endfor %}

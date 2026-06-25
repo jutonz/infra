@@ -1,0 +1,21 @@
+---
+all:
+  hosts:
+    mini:
+      ansible_host: mini
+      ansible_user: root
+      static_ip_interface: enp1s0
+      static_ip_address: 192.168.1.94/24
+      static_ip_gateway: 192.168.1.1
+      static_ip_nameservers:
+        - 192.168.1.1
+    # Other k3s nodes already have router DHCP reservations; add them here only
+    # if they also need pinning (each value must match its reservation):
+    # cary:
+    #   ansible_host: cary
+    #   ansible_user: root
+    #   static_ip_interface: enp1s0
+    #   static_ip_address: 192.168.1.100/24
+    #   static_ip_gateway: 192.168.1.1
+    #   static_ip_nameservers:
+    #     - 192.168.1.1
