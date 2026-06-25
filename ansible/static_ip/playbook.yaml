@@ -1,0 +1,39 @@
+---
+- name: Configure static IP via netplan
+  hosts: all
+  become: true
+  vars:
+    netplan_file: /etc/netplan/60-static-ip.yaml
+  tasks:
+    # cloud-init regenerates /etc/netplan/50-cloud-init.yaml (dhcp4) on every
+    # boot. Disable its network management so our static config is authoritative.
+    - name: Disable cloud-init network configuration
+      ansible.builtin.copy:
+        dest: /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+        content: "network: {config: disabled}\n"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Write static netplan configuration
+      ansible.builtin.template:
+        src: ./files/60-static-ip.yaml.j2
+        dest: "{{ netplan_file }}"
+        owner: root
+        group: root
+        mode: "0600"
+      notify: Apply netplan
+
+    - name: Remove cloud-init generated netplan (superseded by static config)
+      ansible.builtin.file:
+        path: /etc/netplan/50-cloud-init.yaml
+        state: absent
+      notify: Apply netplan
+
+  handlers:
+    # Safe to run over SSH: the address is unchanged, so the link is not torn
+    # down. `netplan apply` validates the config (via `netplan generate`) first.
+    - name: Apply netplan
+      ansible.builtin.command:
+        cmd: netplan apply
+      changed_when: true
