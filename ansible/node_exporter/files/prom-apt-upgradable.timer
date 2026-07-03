@@ -3,6 +3,7 @@ Description=Push apt upgradable metrics to prometheus
 
 [Timer]
 OnCalendar=*-*-* *:30:00
+OnBootSec=2min
 Persistent=true
 Unit=prom-apt-upgradable.service
 
