@@ -5,10 +5,18 @@ export DEBIAN_FRONTEND=noninteractive
 
 UPGRADABLE=$(apt-get -s dist-upgrade | awk '/^Inst / { count++ } END { print count+0 }')
 
+REBOOT_REQUIRED=0
+if [ -f /var/run/reboot-required ]; then
+  REBOOT_REQUIRED=1
+fi
+
 METRICS=$(cat <<EOF_METRICS
 # HELP apt_upgradable_packages Number of apt packages that can be upgraded
 # TYPE apt_upgradable_packages gauge
 apt_upgradable_packages ${UPGRADABLE}
+# HELP node_reboot_required Whether the node requires a reboot (/var/run/reboot-required exists)
+# TYPE node_reboot_required gauge
+node_reboot_required ${REBOOT_REQUIRED}
 EOF_METRICS
 )
 
