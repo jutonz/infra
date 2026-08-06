@@ -17,7 +17,7 @@ spec:
         io.kompose.service: admin
     spec:
       containers:
-        - image: chrislusf/seaweedfs:4.40
+        - image: chrislusf/seaweedfs:4.41
           name: admin
           args:
             - admin
