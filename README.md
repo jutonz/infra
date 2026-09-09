@@ -57,19 +57,6 @@ The `--encrypted-regex` flag tells sops to only encrypt the `data` and
 easier to read in their encrypted state.
 
 
-### Image updates
-
-[Diun] watches the cluster and emails me when a new tag appears. `bin/import-diun-updates`
-reads those notifications out of the HEY imbox, rewrites the matching `image:` lines, and
-trashes the emails it handled. Notifications for images this repo does not deploy are left
-in the imbox. Run it with `--dry-run` first to see what it would do.
-
-Tags that are not a plain version (`latest`, `2.7-alpine`, a build suffix) are reported
-rather than bumped, since replacing them can silently change the image variant.
-
-[Diun]: https://crazymax.dev/diun/
-
-
 ## Ansible
 
 I don't want to be forced to use kubernetes for everything, so I still maintain

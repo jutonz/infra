@@ -14,7 +14,7 @@ spec:
         app: volume
     spec:
       containers:
-        - image: chrislusf/seaweedfs:4.45
+        - image: chrislusf/seaweedfs:4.46
           name: volume
           env:
             - name: POD_NAME

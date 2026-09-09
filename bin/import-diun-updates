@@ -31,6 +31,7 @@ end
 def fetch_postings
   stdout, stderr, status = Open3.capture3("hey", "box", "imbox", "--all", "--json")
   abort_with("hey box imbox failed: #{stderr.strip}") unless status.success?
+  warn(stderr.strip) unless stderr.strip.empty?
 
   JSON.parse(stdout).dig("data", "postings") ||
     abort_with("hey returned no postings")
@@ -65,15 +66,17 @@ def normalize(ref)
   ref.sub(%r{\Adocker\.io/(library/)?}, "")
 end
 
-def manifests
-  Dir.glob("**/*.{yaml,yml}", base: ROOT).sort
+def manifest_lines
+  Dir.glob("**/*.{yaml,yml}", base: ROOT).sort.to_h do |path|
+    [path, File.readlines(File.join(ROOT, path), chomp: true)]
+  end
 end
 
-def repo_images
+def repo_images(lines_by_path)
   images = Hash.new { |hash, key| hash[key] = [] }
 
-  manifests.each do |path|
-    File.readlines(File.join(ROOT, path), chomp: true).each_with_index do |line, index|
+  lines_by_path.each do |path, lines|
+    lines.each_with_index do |line, index|
       match = IMAGE_LINE.match(line)
       next unless match
 
@@ -81,6 +84,9 @@ def repo_images
     end
   end
 
+  # A default block adds the key on read. A later lookup for an image this
+  # repo does not deploy then reports that image as deployed.
+  images.default_proc = nil
   images
 end
 
@@ -100,64 +106,93 @@ def newer?(new_tag, installed_tag)
   new_version.last > installed_version.last
 end
 
+def same_version?(one_tag, other_tag)
+  one = comparable(one_tag)
+  other = comparable(other_tag)
+  return one_tag == other_tag unless one && other
+
+  one == other
+end
+
+# One notification can land on occurrences that do not agree: an image runs at
+# "2.9.1" in one manifest and at "2.7-alpine" in another. Each occurrence gets
+# its own verdict so a variant tag elsewhere does not block a clean bump here.
 def classify(notification, occurrences)
-  return Result.new(notification: notification, outcome: :absent, occurrences: []) if occurrences.empty?
+  return [Result.new(notification: notification, outcome: :absent, occurrences: [])] if occurrences.empty?
 
-  verdicts = occurrences.to_h { |occurrence| [occurrence, newer?(notification.tag, occurrence.tag)] }
-  return Result.new(notification: notification, outcome: :manual, occurrences: occurrences) if verdicts.value?(nil)
+  verdicts = occurrences.group_by { |occurrence| newer?(notification.tag, occurrence.tag) }
+  incomparable = verdicts[nil] || []
+  outdated = verdicts[true] || []
+  satisfied = verdicts[false] || []
 
-  outdated = verdicts.select { |_, is_newer| is_newer }.keys
-  installed = occurrences.map(&:tag).uniq.sort.join(", ")
+  results = []
+  results << Result.new(notification: notification, outcome: :manual, occurrences: incomparable) if incomparable.any?
+  results << Result.new(notification: notification, outcome: :bumped, occurrences: outdated, from: tags_of(outdated)) if outdated.any?
 
-  if outdated.empty?
-    outcome = occurrences.any? { |occurrence| occurrence.tag == notification.tag } ? :current : :older
-    return Result.new(notification: notification, outcome: outcome, occurrences: occurrences, from: installed)
+  if results.empty?
+    outcome = satisfied.any? { |occurrence| same_version?(occurrence.tag, notification.tag) } ? :current : :older
+    results << Result.new(notification: notification, outcome: outcome, occurrences: satisfied, from: tags_of(satisfied))
   end
 
-  Result.new(notification: notification, outcome: :bumped, occurrences: outdated, from: outdated.map(&:tag).uniq.sort.join(", "))
+  results
+end
+
+def tags_of(occurrences)
+  occurrences.map(&:tag).uniq.sort.join(", ")
 end
 
 def rank(notification)
   version = comparable(notification.tag)
-  [version ? 1 : 0, version&.last || Gem::Version.new("0"), notification.received_at.to_s]
+  [version ? version.last : Gem::Version.new("0"), notification.received_at.to_s]
+end
+
+# Only tags from the same ordered series can supersede one another. "2.9.2" says
+# nothing about "2.9-alpine", and trashing the alpine mail would drop the one
+# notification that the alpine deployment needs.
+def series(notification)
+  version = comparable(notification.tag)
+  version ? [notification.ref, version.first] : [notification.ref, notification.id]
 end
 
 def latest_per_image(found)
-  found.group_by(&:ref).each_value do |group|
+  found.group_by { |notification| series(notification) }.each_value do |group|
     winner = group.max_by { |notification| rank(notification) }
-    (group - [winner]).each { |notification| notification.superseded_by = winner.tag }
+    group.each { |notification| notification.superseded_by = winner.tag unless notification.equal?(winner) }
   end
 
   found
 end
 
-def apply(results, dry_run:)
-  edits = Hash.new { |hash, key| hash[key] = File.readlines(File.join(ROOT, key), chomp: true) }
+def apply(results, lines_by_path, dry_run:)
+  changed = []
 
   results.select { |result| result.outcome == :bumped }.each do |result|
     result.occurrences.each do |occurrence|
-      line = edits[occurrence.path][occurrence.index]
-      edits[occurrence.path][occurrence.index] =
-        line.sub(/(image:\s*["']?[^\s"']+):#{Regexp.escape(occurrence.tag)}/) { "#{Regexp.last_match(1)}:#{result.notification.tag}" }
+      lines = lines_by_path[occurrence.path]
+      lines[occurrence.index] = lines[occurrence.index]
+        .sub(/(image:\s*["']?[^\s"']+):#{Regexp.escape(occurrence.tag)}/) { "#{Regexp.last_match(1)}:#{result.notification.tag}" }
+      changed << occurrence.path
     end
   end
 
-  return edits.keys if dry_run
+  changed = changed.uniq
+  return changed if dry_run
 
-  edits.each { |path, lines| File.write(File.join(ROOT, path), lines.join("\n") + "\n") }
-  edits.keys
+  changed.each { |path| File.write(File.join(ROOT, path), lines_by_path[path].join("\n") + "\n") }
+  changed
 end
 
 def trash(ids, dry_run:)
-  return if ids.empty? || dry_run
+  return true if ids.empty? || dry_run
 
   _, stderr, status = Open3.capture3("hey", "trash", *ids.map(&:to_s))
   warn("hey trash failed: #{stderr.strip}") unless status.success?
+  status.success?
 end
 
 SECTIONS = {
   bumped: "Bumped:",
-  manual: "Needs a human (tag is not a plain version):",
+  manual: "Needs a human (tag is not comparable to what is installed):",
   older: "Already ahead of the notification:",
   current: "Already at the notified tag:",
   superseded: "Superseded by a later notification:",
@@ -177,7 +212,8 @@ def describe(result)
   when :older
     ["#{notification.ref}  installed #{result.from}, notified #{notification.tag}"]
   when :superseded
-    ["#{notification.ref}:#{notification.tag}  (see #{notification.superseded_by})"]
+    context = notification.tag == notification.superseded_by ? "duplicate" : "see #{notification.superseded_by}"
+    ["#{notification.ref}:#{notification.tag}  (#{context})"]
   else
     ["#{notification.ref}:#{notification.tag}"]
   end
@@ -209,17 +245,23 @@ if found.empty?
   exit 0
 end
 
-images = repo_images
-results = latest_per_image(found).map do |notification|
+lines_by_path = manifest_lines
+images = repo_images(lines_by_path)
+
+results = latest_per_image(found).flat_map do |notification|
   if notification.superseded_by
     outcome = images.key?(notification.ref) ? :superseded : :absent
-    Result.new(notification: notification, outcome: outcome, occurrences: [])
+    [Result.new(notification: notification, outcome: outcome, occurrences: [])]
   else
-    classify(notification, images[notification.ref])
+    classify(notification, images.fetch(notification.ref, []))
   end
 end
 
-changed_files = apply(results, dry_run: dry_run)
-trashed = results.reject { |result| [:absent, :manual].include?(result.outcome) }.map { |result| result.notification.id }
-trash(trashed, dry_run: dry_run)
-report(results, changed_files, trashed, dry_run: dry_run)
+changed_files = apply(results, lines_by_path, dry_run: dry_run)
+
+kept = results.select { |result| [:absent, :manual].include?(result.outcome) }.map { |result| result.notification.id }
+trashable = results.map { |result| result.notification.id }.uniq - kept
+sent = trash(trashable, dry_run: dry_run)
+
+report(results, changed_files, sent ? trashable : [], dry_run: dry_run)
+exit 1 unless sent
