@@ -1,0 +1,225 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "json"
+require "open3"
+
+DIUN_SENDER = "Diun"
+
+# Diun writes "<registry>/<repository>:<tag> is available".
+NOTIFICATION = /\A(?<ref>\S+):(?<tag>[^\s:]+) is available\z/
+
+IMAGE_LINE = /\A\s*-?\s*image:\s*(?<quote>["']?)(?<ref>[^\s"']+):(?<tag>[^\s"':]+)\k<quote>\s*(?:\#.*)?\z/
+
+# A tag is comparable only when it is a plain dotted number with an optional
+# "v". Tags that carry a variant ("2.7-alpine") or a build suffix
+# ("12.2.0-17142428006") look ordered but are not: a loose rule bumps
+# "2.7-alpine" to "2.9" and drops the variant. Those go to the manual list.
+COMPARABLE_TAG = /\A(?<prefix>v?)(?<numbers>\d+(?:\.\d+)*)\z/
+
+ROOT = File.expand_path("..", __dir__)
+
+Notification = Struct.new(:id, :ref, :tag, :received_at, :superseded_by, keyword_init: true)
+Occurrence = Struct.new(:path, :index, :tag, keyword_init: true)
+Result = Struct.new(:notification, :outcome, :occurrences, :from, keyword_init: true)
+
+def abort_with(message)
+  warn(message)
+  exit 1
+end
+
+def fetch_postings
+  stdout, stderr, status = Open3.capture3("hey", "box", "imbox", "--all", "--json")
+  abort_with("hey box imbox failed: #{stderr.strip}") unless status.success?
+
+  JSON.parse(stdout).dig("data", "postings") ||
+    abort_with("hey returned no postings")
+rescue Errno::ENOENT
+  abort_with("hey CLI not found on PATH")
+rescue JSON::ParserError => e
+  abort_with("could not parse hey output: #{e.message}")
+end
+
+def notifications(postings)
+  postings.filter_map do |posting|
+    next unless posting["alternative_sender_name"] == DIUN_SENDER
+
+    match = NOTIFICATION.match(posting["name"].to_s)
+    unless match
+      warn("skipping unrecognized Diun subject: #{posting["name"].inspect}")
+      next
+    end
+
+    Notification.new(
+      id: posting["id"],
+      ref: normalize(match[:ref]),
+      tag: match[:tag],
+      received_at: posting["active_at"]
+    )
+  end
+end
+
+# Diun always fully qualifies the registry; k8s manifests write Docker Hub
+# images bare. Both sides go through this so they meet.
+def normalize(ref)
+  ref.sub(%r{\Adocker\.io/(library/)?}, "")
+end
+
+def manifests
+  Dir.glob("**/*.{yaml,yml}", base: ROOT).sort
+end
+
+def repo_images
+  images = Hash.new { |hash, key| hash[key] = [] }
+
+  manifests.each do |path|
+    File.readlines(File.join(ROOT, path), chomp: true).each_with_index do |line, index|
+      match = IMAGE_LINE.match(line)
+      next unless match
+
+      images[normalize(match[:ref])] << Occurrence.new(path: path, index: index, tag: match[:tag])
+    end
+  end
+
+  images
+end
+
+def comparable(tag)
+  match = COMPARABLE_TAG.match(tag)
+  return nil unless match
+
+  [match[:prefix], Gem::Version.new(match[:numbers])]
+end
+
+def newer?(new_tag, installed_tag)
+  new_version = comparable(new_tag)
+  installed_version = comparable(installed_tag)
+  return nil unless new_version && installed_version
+  return nil unless new_version.first == installed_version.first
+
+  new_version.last > installed_version.last
+end
+
+def classify(notification, occurrences)
+  return Result.new(notification: notification, outcome: :absent, occurrences: []) if occurrences.empty?
+
+  verdicts = occurrences.to_h { |occurrence| [occurrence, newer?(notification.tag, occurrence.tag)] }
+  return Result.new(notification: notification, outcome: :manual, occurrences: occurrences) if verdicts.value?(nil)
+
+  outdated = verdicts.select { |_, is_newer| is_newer }.keys
+  installed = occurrences.map(&:tag).uniq.sort.join(", ")
+
+  if outdated.empty?
+    outcome = occurrences.any? { |occurrence| occurrence.tag == notification.tag } ? :current : :older
+    return Result.new(notification: notification, outcome: outcome, occurrences: occurrences, from: installed)
+  end
+
+  Result.new(notification: notification, outcome: :bumped, occurrences: outdated, from: outdated.map(&:tag).uniq.sort.join(", "))
+end
+
+def rank(notification)
+  version = comparable(notification.tag)
+  [version ? 1 : 0, version&.last || Gem::Version.new("0"), notification.received_at.to_s]
+end
+
+def latest_per_image(found)
+  found.group_by(&:ref).each_value do |group|
+    winner = group.max_by { |notification| rank(notification) }
+    (group - [winner]).each { |notification| notification.superseded_by = winner.tag }
+  end
+
+  found
+end
+
+def apply(results, dry_run:)
+  edits = Hash.new { |hash, key| hash[key] = File.readlines(File.join(ROOT, key), chomp: true) }
+
+  results.select { |result| result.outcome == :bumped }.each do |result|
+    result.occurrences.each do |occurrence|
+      line = edits[occurrence.path][occurrence.index]
+      edits[occurrence.path][occurrence.index] =
+        line.sub(/(image:\s*["']?[^\s"']+):#{Regexp.escape(occurrence.tag)}/) { "#{Regexp.last_match(1)}:#{result.notification.tag}" }
+    end
+  end
+
+  return edits.keys if dry_run
+
+  edits.each { |path, lines| File.write(File.join(ROOT, path), lines.join("\n") + "\n") }
+  edits.keys
+end
+
+def trash(ids, dry_run:)
+  return if ids.empty? || dry_run
+
+  _, stderr, status = Open3.capture3("hey", "trash", *ids.map(&:to_s))
+  warn("hey trash failed: #{stderr.strip}") unless status.success?
+end
+
+SECTIONS = {
+  bumped: "Bumped:",
+  manual: "Needs a human (tag is not a plain version):",
+  older: "Already ahead of the notification:",
+  current: "Already at the notified tag:",
+  superseded: "Superseded by a later notification:",
+  absent: "Not deployed from this repo (email left alone):"
+}.freeze
+
+def describe(result)
+  notification = result.notification
+
+  case result.outcome
+  when :bumped
+    ["#{notification.ref}  #{result.from} -> #{notification.tag}"] +
+      result.occurrences.map { |occurrence| "  #{occurrence.path}:#{occurrence.index + 1}" }
+  when :manual
+    ["#{notification.ref}:#{notification.tag}"] +
+      result.occurrences.map { |occurrence| "  #{occurrence.path} @ #{occurrence.tag}" }
+  when :older
+    ["#{notification.ref}  installed #{result.from}, notified #{notification.tag}"]
+  when :superseded
+    ["#{notification.ref}:#{notification.tag}  (see #{notification.superseded_by})"]
+  else
+    ["#{notification.ref}:#{notification.tag}"]
+  end
+end
+
+def report(results, changed_files, trashed, dry_run:)
+  by_outcome = results.group_by(&:outcome)
+  puts("DRY RUN \u2014 nothing written, nothing trashed\n\n") if dry_run
+
+  SECTIONS.each do |outcome, title|
+    next unless by_outcome.key?(outcome)
+
+    puts title
+    by_outcome[outcome].each { |result| describe(result).each { |line| puts "  #{line}" } }
+    puts
+  end
+
+  puts "#{changed_files.size} file(s) #{dry_run ? "would change" : "changed"}, " \
+       "#{trashed.size} email(s) #{dry_run ? "would be trashed" : "trashed"}"
+end
+
+dry_run = ARGV.any? { |arg| ["-n", "--dry-run"].include?(arg) }
+unknown = ARGV.reject { |arg| ["-n", "--dry-run"].include?(arg) }
+abort_with("usage: bin/import-diun-updates [--dry-run]") if unknown.any?
+
+found = notifications(fetch_postings)
+if found.empty?
+  puts "No Diun notifications in the imbox."
+  exit 0
+end
+
+images = repo_images
+results = latest_per_image(found).map do |notification|
+  if notification.superseded_by
+    outcome = images.key?(notification.ref) ? :superseded : :absent
+    Result.new(notification: notification, outcome: outcome, occurrences: [])
+  else
+    classify(notification, images[notification.ref])
+  end
+end
+
+changed_files = apply(results, dry_run: dry_run)
+trashed = results.reject { |result| [:absent, :manual].include?(result.outcome) }.map { |result| result.notification.id }
+trash(trashed, dry_run: dry_run)
+report(results, changed_files, trashed, dry_run: dry_run)
