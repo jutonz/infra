@@ -1,0 +1,62 @@
+#!/bin/bash
+set -euo pipefail
+
+TARSNAP_CONFIG="$HOME/.tarsnap/.tarsnaprc-keybase"
+STATS_CSV=$(mktemp)
+trap 'rm -f "$STATS_CSV"' EXIT
+
+date
+START=$(date +%s)
+
+# --no-humanize-numbers: the rc file sets humanize-numbers, which also
+# formats the CSV values as "126 GB" instead of bytes.
+/usr/bin/tarsnap -c \
+  -f "keybase-$(date +%Y-%m-%d_%H-%M-%S)" \
+  --configfile "$TARSNAP_CONFIG" \
+  --no-humanize-numbers \
+  --csv-file "$STATS_CSV" \
+  /tank/data/keybase-backup-use-me
+
+END=$(date +%s)
+ARCHIVES=$(/usr/bin/tarsnap --list-archives --configfile "$TARSNAP_CONFIG" | wc -l)
+
+csv_value() {
+  awk -F, -v row="$1" -v col="$2" '{ sub(/^ +/, "", $1) } $1 == row { print $col; found = 1 } END { exit !found }' "$STATS_CSV"
+}
+
+TOTAL_BYTES=$(csv_value "All archives" 2)
+COMPRESSED_BYTES=$(csv_value "All archives" 3)
+UNIQUE_TOTAL_BYTES=$(csv_value "(unique data)" 2)
+UNIQUE_COMPRESSED_BYTES=$(csv_value "(unique data)" 3)
+NEW_COMPRESSED_BYTES=$(csv_value "New data" 3)
+
+METRICS=$(cat <<EOF_METRICS
+# HELP tarsnap_total_bytes Total size of all archives
+# TYPE tarsnap_total_bytes gauge
+tarsnap_total_bytes ${TOTAL_BYTES}
+# HELP tarsnap_compressed_bytes Compressed size of all archives
+# TYPE tarsnap_compressed_bytes gauge
+tarsnap_compressed_bytes ${COMPRESSED_BYTES}
+# HELP tarsnap_unique_total_bytes Total size of deduplicated data across all archives
+# TYPE tarsnap_unique_total_bytes gauge
+tarsnap_unique_total_bytes ${UNIQUE_TOTAL_BYTES}
+# HELP tarsnap_unique_compressed_bytes Compressed size of deduplicated data across all archives (billed storage)
+# TYPE tarsnap_unique_compressed_bytes gauge
+tarsnap_unique_compressed_bytes ${UNIQUE_COMPRESSED_BYTES}
+# HELP tarsnap_last_archive_unique_compressed_bytes Compressed size of new data added by the last archive
+# TYPE tarsnap_last_archive_unique_compressed_bytes gauge
+tarsnap_last_archive_unique_compressed_bytes ${NEW_COMPRESSED_BYTES}
+# HELP tarsnap_archives Number of archives stored
+# TYPE tarsnap_archives gauge
+tarsnap_archives ${ARCHIVES}
+# HELP tarsnap_backup_duration_seconds Duration of the last successful backup
+# TYPE tarsnap_backup_duration_seconds gauge
+tarsnap_backup_duration_seconds $((END - START))
+# HELP tarsnap_last_success_timestamp_seconds Unix time of the last successful backup
+# TYPE tarsnap_last_success_timestamp_seconds gauge
+tarsnap_last_success_timestamp_seconds ${END}
+EOF_METRICS
+)
+
+printf "%s\n" "${METRICS}" | curl -XPOST --fail --silent --show-error --data-binary @- \
+  "{{ pushgateway_url }}/metrics/job/tarsnap/instance/$(hostname)"
