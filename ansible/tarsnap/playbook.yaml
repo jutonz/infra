@@ -1,0 +1,27 @@
+---
+# NOTE: tarsnap, ~/.tarsnap/.tarsnaprc-keybase, and the key are set up by hand
+- name: Schedule tarsnap backups
+  hosts: all
+  become: true
+  vars:
+    backup_user: jutonz
+    tarsnap_dir: /home/jutonz/.tarsnap
+    backup_script_path: "{{ tarsnap_dir }}/backup-keybase.sh"
+    pushgateway_url: https://pushgateway.home.jutonz.com
+  tasks:
+    - name: Add backup script
+      ansible.builtin.template:
+        src: ./files/backup-keybase.sh.j2
+        dest: "{{ backup_script_path }}"
+        owner: "{{ backup_user }}"
+        group: "{{ backup_user }}"
+        mode: "0755"
+
+    - name: Install cron job
+      ansible.builtin.cron:
+        name: "Tarsnap keybase backup"
+        user: "{{ backup_user }}"
+        weekday: "0"
+        hour: "3"
+        minute: "0"
+        job: "{{ backup_script_path }} > {{ tarsnap_dir }}/backup_out.txt 2>&1"
