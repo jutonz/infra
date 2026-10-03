@@ -25,6 +25,9 @@ spec:
       containers:
         - image: grafana/grafana-oss:12.2.0-17142428006
           name: grafana
+          env:
+            - name: GF_DATABASE_WAL
+              value: "true"
           ports:
             - containerPort: 3000
               protocol: TCP
