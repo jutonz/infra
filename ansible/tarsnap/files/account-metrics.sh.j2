@@ -1,0 +1,54 @@
+#!/bin/bash
+set -euo pipefail
+
+source "{{ account_env_path }}"
+
+TARSNAP_URL=https://www.tarsnap.com
+COOKIE_JAR=$(mktemp)
+trap 'rm -f "$COOKIE_JAR"' EXIT
+
+date
+
+# Tarsnap has no account API. The manage page links to the activity pages
+# with a session token, and the token only works with the login cookie.
+MANAGE_HTML=$(printf "%s" "$TARSNAP_PASSWORD" | curl --fail --silent --show-error --location \
+  --cookie-jar "$COOKIE_JAR" \
+  --data-urlencode "address=${TARSNAP_ADDRESS}" \
+  --data-urlencode "password@-" \
+  "${TARSNAP_URL}/manage.cgi")
+
+BALANCE=$(printf "%s" "$MANAGE_HTML" | sed -n 's/.*current account balance is <code>\$\(-\{0,1\}[0-9.]*\)<\/code>.*/\1/p')
+ACTIVITY_PATH=$(printf "%s" "$MANAGE_HTML" | grep -o 'manage\.cgi?[^"]*action=activity' | head -n 1)
+
+if [ -z "$BALANCE" ] || [ -z "$ACTIVITY_PATH" ]; then
+  echo "Tarsnap login failed" >&2
+  exit 1
+fi
+
+# CSV columns: RECTYPE,DATE,TYPE,QUANTITY,AMOUNT,BALANCE. The site posts the
+# usage for each day shortly after midnight UTC.
+DAILY_COST=$(curl --fail --silent --show-error --cookie "$COOKIE_JAR" \
+  "${TARSNAP_URL}/${ACTIVITY_PATH}&format=csv" |
+  awk -F, -v days=30 '
+    $1 == "Usage" { cost[$2] += $5 }
+    END {
+      n = asorti(cost, dates)
+      if (n == 0) exit 1
+      start = n > days ? n - days + 1 : 1
+      for (i = start; i <= n; i++) total += cost[dates[i]]
+      printf "%.6f\n", total / (n - start + 1)
+    }')
+
+METRICS=$(cat <<EOF_METRICS
+# HELP tarsnap_balance_dollars Current Tarsnap account balance
+# TYPE tarsnap_balance_dollars gauge
+tarsnap_balance_dollars ${BALANCE}
+# HELP tarsnap_daily_cost_dollars Average daily charge over the last 30 days of account activity
+# TYPE tarsnap_daily_cost_dollars gauge
+tarsnap_daily_cost_dollars ${DAILY_COST}
+EOF_METRICS
+)
+
+printf "%s\n" "${METRICS}"
+printf "%s\n" "${METRICS}" | curl -XPOST --fail --silent --show-error --data-binary @- \
+  "{{ pushgateway_url }}/metrics/job/tarsnap_account"

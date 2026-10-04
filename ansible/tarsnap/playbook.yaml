@@ -7,6 +7,8 @@
     backup_user: jutonz
     tarsnap_dir: /home/jutonz/.tarsnap
     backup_script_path: "{{ tarsnap_dir }}/backup-keybase.sh"
+    account_env_path: "{{ tarsnap_dir }}/account.env"
+    account_script_path: "{{ tarsnap_dir }}/account-metrics.sh"
     pushgateway_url: https://pushgateway.home.jutonz.com
   tasks:
     - name: Add backup script
@@ -25,3 +27,30 @@
         hour: "3"
         minute: "0"
         job: "{{ backup_script_path }} > {{ tarsnap_dir }}/backup_out.txt 2>&1"
+
+    - name: Add account credentials
+      ansible.builtin.copy:
+        dest: "{{ account_env_path }}"
+        owner: "{{ backup_user }}"
+        group: "{{ backup_user }}"
+        mode: "0600"
+        content: |
+          TARSNAP_ADDRESS={{ lookup('community.general.onepassword', 'Tarsnap', field='username', account_id='BUEIPQKXV5APLFA6R6AGR34NZ4', vault='Private') | quote }}
+          TARSNAP_PASSWORD={{ lookup('community.general.onepassword', 'Tarsnap', field='password', account_id='BUEIPQKXV5APLFA6R6AGR34NZ4', vault='Private') | quote }}
+      no_log: true
+
+    - name: Add account metrics script
+      ansible.builtin.template:
+        src: ./files/account-metrics.sh.j2
+        dest: "{{ account_script_path }}"
+        owner: "{{ backup_user }}"
+        group: "{{ backup_user }}"
+        mode: "0755"
+
+    - name: Install account metrics cron job
+      ansible.builtin.cron:
+        name: "Tarsnap account metrics"
+        user: "{{ backup_user }}"
+        hour: "1"
+        minute: "0"
+        job: "{{ account_script_path }} > {{ tarsnap_dir }}/account_metrics_out.txt 2>&1"
