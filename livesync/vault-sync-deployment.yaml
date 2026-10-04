@@ -71,6 +71,13 @@ spec:
               value: "900"
             - name: PUSHGATEWAY_URL
               value: http://pushgateway.monitoring.svc.cluster.local:9091
+            - name: DATABASE
+              value: notes
+            - name: LIVESYNC_SERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb
+                  key: livesync-server-password
             # The image has no tzdata, so a zone name such as
             # America/New_York falls back to UTC. musl reads POSIX rules.
             - name: TZ

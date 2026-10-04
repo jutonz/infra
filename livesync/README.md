@@ -22,7 +22,9 @@ to git. Terms such as Remote, Vault Mirror, and Rebuild are defined in
   container writes the Vault to `/data/vault`, and the `git-backup` container
   commits and pushes it. Each successful run sets
   `last_success_timestamp_seconds{job="livesync_git_backup"}` in the
-  pushgateway.
+  pushgateway. Each run also sets `livesync_mirror_lag_seconds`: the time
+  that a note change on the Remote has waited for the Vault Mirror to write
+  it, or 0 when the Vault Mirror has caught up. Grafana alerts on both.
 - **Backup:** `git@littlebox:jutonz/notes.git`. restic backs up littlebox's
   `/home/git` twice a day, and Longhorn backs up the CouchDB volume to S3
   daily.
