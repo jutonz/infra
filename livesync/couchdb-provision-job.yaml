@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: couchdb-provision
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: provision
+          image: curlimages/curl:8.22.0
+          command: ["sh", "/scripts/provision.sh"]
+          env:
+            - name: DATABASE
+              value: notes
+            - name: COUCHDB_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb
+                  key: admin-user
+            - name: COUCHDB_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb
+                  key: admin-password
+            - name: LIVESYNC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb
+                  key: livesync-password
+            - name: LIVESYNC_SERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb
+                  key: livesync-server-password
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+      volumes:
+        - name: scripts
+          configMap:
+            name: livesync-scripts

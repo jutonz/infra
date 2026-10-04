@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-sync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault-sync
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        diun.enable: "true"
+        diun.watch_repo: "true"
+        diun.sort_tags: "semver"
+        diun.max_tags: "2"
+        diun.include_tags: '^v?[0-9]+\.[0-9]+\.[0-9]+(-cli)?$'
+      labels:
+        app: vault-sync
+    spec:
+      initContainers:
+        - name: configure-cli
+          # https://github.com/vrtmrz/obsidian-livesync/pkgs/container/livesync-cli
+          # This digest is the 1.0.34 edge build of 2026-10-02. No X.Y.Z-cli
+          # tag includes the 1.0.33 vault ID key yet; 1.0.32-cli has no
+          # support for it. Move to the first tag >= 1.0.34.
+          image: ghcr.io/vrtmrz/livesync-cli:edge@sha256:8e9d80f5b1ea201092da6d96646b025d0cfa0a55e9cd7ab2797e9318b98fd527
+          command: ["sh", "/scripts/configure-cli.sh"]
+          env:
+            - name: DATABASE
+              value: notes
+            - name: SETUP_URI
+              valueFrom:
+                secretKeyRef:
+                  name: vault-sync
+                  key: setup-uri
+            - name: SETUP_URI_PASSPHRASE
+              valueFrom:
+                secretKeyRef:
+                  name: vault-sync
+                  key: setup-uri-passphrase
+            - name: LIVESYNC_SERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb
+                  key: livesync-server-password
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: scripts
+              mountPath: /scripts
+      containers:
+        - name: livesync-cli
+          image: ghcr.io/vrtmrz/livesync-cli:edge@sha256:8e9d80f5b1ea201092da6d96646b025d0cfa0a55e9cd7ab2797e9318b98fd527
+          command: ["node", "/app/dist/index.cjs", "/data/db", "--settings", "/data/db/settings.json", "--vault", "/data/vault", "daemon"]
+          resources:
+            limits:
+              memory: "1Gi"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+        - name: git-backup
+          image: alpine/git:v2.54.0
+          command: ["sh", "/scripts/git-backup.sh"]
+          env:
+            - name: GIT_REMOTE
+              value: git@192.168.1.217:jutonz/notes.git
+            - name: INTERVAL_SECONDS
+              value: "900"
+            - name: PUSHGATEWAY_URL
+              value: http://pushgateway.monitoring.svc.cluster.local:9091
+            - name: DATABASE
+              value: notes
+            - name: LIVESYNC_SERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb
+                  key: livesync-server-password
+            # The image has no tzdata, so a zone name such as
+            # America/New_York falls back to UTC. musl reads POSIX rules.
+            - name: TZ
+              value: EST5EDT,M3.2.0,M11.1.0
+          resources:
+            limits:
+              memory: "256Mi"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: scripts
+              mountPath: /scripts
+            - name: ssh-key
+              mountPath: /ssh
+            - name: ssh-known-hosts
+              mountPath: /ssh-known-hosts
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: vault-sync-data-lh
+        - name: scripts
+          configMap:
+            name: livesync-scripts
+        - name: ssh-key
+          secret:
+            secretName: vault-sync
+            defaultMode: 0400
+            items:
+              - key: ssh-private-key
+                path: id_ed25519
+        - name: ssh-known-hosts
+          configMap:
+            name: littlebox-known-hosts
