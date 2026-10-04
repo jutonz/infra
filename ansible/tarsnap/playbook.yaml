@@ -35,8 +35,25 @@
         group: "{{ backup_user }}"
         mode: "0600"
         content: |
-          TARSNAP_ADDRESS={{ lookup('community.general.onepassword', 'Tarsnap', field='username', account_id='BUEIPQKXV5APLFA6R6AGR34NZ4', vault='Private') | quote }}
-          TARSNAP_PASSWORD={{ lookup('community.general.onepassword', 'Tarsnap', field='password', account_id='BUEIPQKXV5APLFA6R6AGR34NZ4', vault='Private') | quote }}
+          TARSNAP_ADDRESS={{ tarsnap_address | quote }}
+          TARSNAP_PASSWORD={{ tarsnap_password | quote }}
+      vars:
+        tarsnap_address: >-
+          {{ lookup(
+              'community.general.onepassword',
+              'Tarsnap',
+              field='username',
+              account_id='BUEIPQKXV5APLFA6R6AGR34NZ4',
+              vault='Private'
+          ) }}
+        tarsnap_password: >-
+          {{ lookup(
+              'community.general.onepassword',
+              'Tarsnap',
+              field='password',
+              account_id='BUEIPQKXV5APLFA6R6AGR34NZ4',
+              vault='Private'
+          ) }}
       no_log: true
 
     - name: Add account metrics script
