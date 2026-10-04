@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: livesync
+resources:
+- ./namespace.yaml
+- ./couchdb-pvc-data-lh.yaml
+- ./couchdb-deployment.yaml
+- ./couchdb-service.yaml
+- ./couchdb-provision-job.yaml
+- ./ingress.yaml
+- ./vault-sync-pvc-data-lh.yaml
+- ./vault-sync-deployment.yaml
+configMapGenerator:
+- name: livesync-scripts
+  files:
+  - ./scripts/livesync.ini
+  - ./scripts/provision.sh
+  - ./scripts/configure-cli.sh
+  - ./scripts/git-backup.sh
+- name: littlebox-known-hosts
+  files:
+  - ./scripts/known_hosts
+generators:
+- ./secret-generator.yaml

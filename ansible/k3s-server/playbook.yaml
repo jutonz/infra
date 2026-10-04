@@ -10,3 +10,12 @@
         minute: "0"
         hour: "2"
         job: "/usr/local/bin/k3s crictl rmi --prune"
+
+    # Every container runs as root, so all pods on a node share root's
+    # inotify instance limit. The kernel default of 128 runs out.
+    - name: Raise inotify instance limit
+      ansible.posix.sysctl:
+        name: fs.inotify.max_user_instances
+        value: "1024"
+        sysctl_file: /etc/sysctl.d/90-inotify.conf
+        reload: true

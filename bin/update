@@ -291,3 +291,9 @@ kustomize build \
   --enable-exec \
   calibre-web \
 | kubectl apply -f -
+
+kustomize build \
+  --enable-alpha-plugins \
+  --enable-exec \
+  livesync \
+| kubectl apply -f -

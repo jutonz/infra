@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: couchdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: couchdb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        diun.enable: "true"
+        diun.watch_repo: "true"
+        diun.sort_tags: "semver"
+        diun.max_tags: "2"
+        diun.include_tags: '^[0-9]+\.[0-9]+\.[0-9]+$'
+      labels:
+        app: couchdb
+    spec:
+      initContainers:
+        # The CouchDB entrypoint chmods every file under /opt/couchdb/etc
+        # and exits when one is read-only, as a ConfigMap mount is.
+        - name: copy-config
+          image: couchdb:3.5.2
+          command: ["cp", "/config/livesync.ini", "/local.d/livesync.ini"]
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: local-d
+              mountPath: /local.d
+      containers:
+        - name: couchdb
+          image: couchdb:3.5.2
+          env:
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb
+                  key: admin-user
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb
+                  key: admin-password
+          ports:
+            - containerPort: 5984
+          readinessProbe:
+            tcpSocket:
+              port: 5984
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 5984
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            limits:
+              memory: "1Gi"
+          volumeMounts:
+            - name: data
+              mountPath: /opt/couchdb/data
+            - name: local-d
+              mountPath: /opt/couchdb/etc/local.d
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: couchdb-data-lh
+        - name: config
+          configMap:
+            name: livesync-scripts
+        - name: local-d
+          emptyDir: {}
