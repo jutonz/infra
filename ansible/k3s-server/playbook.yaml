@@ -2,6 +2,10 @@
 - name: Add k3s
   hosts: all
   become: true
+  handlers:
+    - name: Reload sysctl
+      ansible.builtin.command: sysctl --system
+      changed_when: true
   tasks:
     - name: Install cron job to prune old images
       ansible.builtin.cron:
@@ -14,8 +18,10 @@
     # Every container runs as root, so all pods on a node share root's
     # inotify instance limit. The kernel default of 128 runs out.
     - name: Raise inotify instance limit
-      ansible.posix.sysctl:
-        name: fs.inotify.max_user_instances
-        value: "1024"
-        sysctl_file: /etc/sysctl.d/90-inotify.conf
-        reload: true
+      ansible.builtin.copy:
+        dest: /etc/sysctl.d/90-inotify.conf
+        content: "fs.inotify.max_user_instances=1024\n"
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload sysctl
