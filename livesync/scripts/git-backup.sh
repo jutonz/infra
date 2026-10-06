@@ -26,10 +26,18 @@ report_success() {
 }
 
 # LiveSync stores each note's metadata in a document whose ID starts with
-# "f:". Chunks and customization sync use other prefixes.
-newest_note_seq() {
-  wget -q -O - "http://livesync-server:${LIVESYNC_SERVER_PASSWORD}@couchdb:5984/${DATABASE}/_changes?descending=true&limit=200" |
-    grep -o '"seq":"[^"]*","id":"f:' | head -n 1 | cut -d '"' -f 4
+# "f:". Chunks and customization sync use other prefixes. CouchDB seqs are
+# opaque and, on a sharded database, not comparable between requests, so
+# resume from the previous last_seq instead.
+poll_note_changes() {
+  changes=$(wget -q -O - "http://livesync-server:${LIVESYNC_SERVER_PASSWORD}@couchdb:5984/${DATABASE}/_changes?since=${since}") || return 1
+  next_since=$(printf '%s' "$changes" | grep -o '"last_seq":"[^"]*"' | cut -d '"' -f 4)
+  [ -n "$next_since" ] || return 1
+  since=$next_since
+  note_changed=0
+  case $changes in
+    *'"id":"f:'*) note_changed=1 ;;
+  esac
 }
 
 # The CLI copies each note's mtime from the Remote, so only ctime shows when
@@ -38,18 +46,16 @@ newest_vault_write() {
   find /data/vault -path /data/vault/.git -prune -o -exec stat -c %Z {} + | sort -n | tail -n 1
 }
 
-last_seq=""
+since=now
 changed_after=0
 previous_check=$(date +%s)
 
 report_mirror_lag() {
   now=$(date +%s)
-  seq=$(newest_note_seq)
-  [ -n "$seq" ] || return 1
-  if [ -n "$last_seq" ] && [ "$seq" != "$last_seq" ] && [ "$changed_after" -eq 0 ]; then
+  poll_note_changes || return 1
+  if [ "$note_changed" -eq 1 ] && [ "$changed_after" -eq 0 ]; then
     changed_after=$previous_check
   fi
-  last_seq=$seq
   previous_check=$now
   if [ "$changed_after" -ne 0 ] && [ "$(newest_vault_write)" -ge "$changed_after" ]; then
     changed_after=0
