@@ -5,6 +5,10 @@ all:
     tunnel_ssh_port: 22022
     tunnel_listen_address: 192.168.1.21
     tunnel_listen_port: 2222
+    tunnel_user: tunnel
+    tunnel_home: /var/lib/tunnel
+    client_key_path: "{{ tunnel_home }}/.ssh/id_ed25519"
+    known_hosts_path: /etc/ssh/reverse_tunnel_known_hosts
   children:
     tunnel_endpoints:
       hosts:

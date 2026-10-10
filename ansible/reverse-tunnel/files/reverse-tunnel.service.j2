@@ -4,7 +4,7 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-User=tunnel
+User={{ tunnel_user }}
 # autossh gives up if the first connection fails within 30 seconds,
 # which happens when the box boots before the network is usable.
 Environment=AUTOSSH_GATETIME=0
@@ -20,7 +20,7 @@ ExecStart=/usr/bin/autossh -M 0 -N \
   -i {{ client_key_path }} \
   -p {{ tunnel_ssh_port }} \
   -R {{ tunnel_listen_address }}:{{ tunnel_listen_port }}:localhost:22 \
-  tunnel@{{ tunnel_hostname }}
+  {{ tunnel_user }}@{{ tunnel_hostname }}
 Restart=always
 RestartSec=30
 
