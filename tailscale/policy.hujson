@@ -1,0 +1,25 @@
+// Applied by .github/workflows/tailscale-policy.yml. Edits made in the
+// admin console are overwritten on the next push to main.
+{
+  // An OAuth client with several tags can only mint keys that carry all
+  // of them, so the ansible client holds tag:ansible, which owns the rest.
+  // https://github.com/tailscale/terraform-provider-tailscale/issues/437
+  "tagOwners": {
+    "tag:ansible": ["autogroup:admin"],
+    "tag:home":    ["autogroup:admin", "tag:ansible"],
+    "tag:offsite": ["autogroup:admin", "tag:ansible"],
+  },
+
+  // Tailscale denies anything not granted here. No grant has tag:offsite
+  // as its source, so crents cannot open a connection into the tailnet.
+  "grants": [
+    {"src": ["autogroup:member"], "dst": ["tag:offsite"], "ip": ["tcp:22"]},
+    {"src": ["tag:home"],         "dst": ["tag:offsite"], "ip": ["tcp:22", "tcp:9100"]},
+  ],
+
+  "tests": [
+    {"src": "jutonz@github", "accept": ["tag:offsite:22"], "deny": ["tag:home:22"]},
+    {"src": "tag:home",    "accept": ["tag:offsite:22", "tag:offsite:9100"], "deny": ["tag:offsite:6443"]},
+    {"src": "tag:offsite", "deny":   ["tag:home:22", "tag:home:9100"]},
+  ],
+}

@@ -1,0 +1,76 @@
+---
+- name: Join the tailnet
+  hosts: all
+  become: true
+  vars:
+    keyring_path: /usr/share/keyrings/tailscale-archive-keyring.gpg
+    repo_url: https://pkgs.tailscale.com/stable/ubuntu
+  tasks:
+    - name: Add Tailscale apt key
+      ansible.builtin.get_url:
+        url: "{{ repo_url }}/{{ ansible_distribution_release }}.noarmor.gpg"
+        dest: "{{ keyring_path }}"
+        mode: "0644"
+
+    - name: Add Tailscale apt repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by={{ keyring_path }}] {{ repo_url }} {{ ansible_distribution_release }} main"
+        filename: tailscale
+        state: present
+
+    - name: Install Tailscale
+      ansible.builtin.apt:
+        name: tailscale
+        state: present
+        update_cache: true
+
+    - name: Enable and start tailscaled
+      ansible.builtin.systemd:
+        name: tailscaled
+        state: started
+        enabled: true
+
+    - name: Read Tailscale status
+      ansible.builtin.command: tailscale status --json
+      register: tailscale_status
+      changed_when: false
+      failed_when: false
+
+    # An OAuth client secret works as an auth key when the URL parameters
+    # are appended. https://tailscale.com/kb/1215/oauth-clients#registering-new-nodes-using-oauth-credentials
+    - name: Join the tailnet
+      when: (tailscale_status.stdout | from_json).BackendState != 'Running'
+      ansible.builtin.command: >-
+        tailscale up
+        --auth-key={{ oauth_secret }}?ephemeral=false&preauthorized=true
+        --advertise-tags={{ tailscale_tag }}
+        --accept-dns=false
+        --accept-routes=false
+      register: tailscale_up
+      changed_when: true
+      failed_when: false
+      no_log: true
+      vars:
+        oauth_secret: >-
+          {{ lookup(
+              'community.general.onepassword',
+              'Tailscale',
+              field='ansible oauth secret',
+              account_id='BUEIPQKXV5APLFA6R6AGR34NZ4',
+              vault='Infra'
+          ) }}
+
+    - name: Report join failure
+      when: tailscale_up.rc | default(0) != 0
+      ansible.builtin.fail:
+        msg: "{{ tailscale_up.stderr | regex_replace('tskey-[A-Za-z0-9_-]+', 'tskey-REDACTED') }}"
+
+    # MagicDNS would replace /etc/resolv.conf, which CoreDNS forwards to.
+    - name: Apply Tailscale preferences
+      ansible.builtin.command: >-
+        tailscale set
+        --accept-dns=false
+        --accept-routes=false
+        --ssh=false
+        --auto-update
+      changed_when: false
