@@ -4,13 +4,19 @@ Port 22
 Port {{ tunnel_ssh_port }}
 
 Match LocalPort {{ tunnel_ssh_port }}
-  AllowUsers tunnel
+  AllowUsers {{ tunnel_user }}
+
+# The tunnel user can also log in on port 22, so its limits must not
+# depend on the port.
+Match User {{ tunnel_user }}
   AuthenticationMethods publickey
   AllowTcpForwarding remote
+  AllowStreamLocalForwarding no
   GatewayPorts clientspecified
   PermitListen {{ tunnel_listen_address }}:{{ tunnel_listen_port }}
-  # A dead session keeps holding the listen port, so the client cannot
-  # reconnect until sshd notices the session is gone.
+  PermitOpen none
+  # A dead session keeps the listen port, so the client cannot reconnect
+  # until sshd sees that the session is gone.
   ClientAliveInterval 15
   ClientAliveCountMax 3
   PermitTTY no
