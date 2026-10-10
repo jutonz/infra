@@ -78,7 +78,7 @@
         mode: "0644"
       vars:
         command_line_args: >-
-          {{ ['--web.listen-address=:9100']
+          {{ ['--web.listen-address=' ~ (listen_address | default(':9100'))]
              + (['--collector.textfile.directory=' ~ textfile_dir] if textfile_dir is defined else []) }}
 
     - name: Enable and start service
