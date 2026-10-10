@@ -33,3 +33,22 @@ _Avoid_: overwrite remote, reset
 
 **Remote Lock**:
 The state of the Remote after a Rebuild, in which each other device and the Vault Mirror must be accepted again before it can sync.
+
+## Offsite access
+
+**Offsite box**:
+crents, the mini PC at a friend's house. It accepts no inbound connections and opens none into the tailnet. See `tailscale/README.md`.
+_Avoid_: remote, offsite server
+
+**Tailscale path**:
+The SSH route to the Offsite box over the tailnet, at `crents.tail98377b.ts.net`.
+
+**Reverse tunnel**:
+The SSH route that the Offsite box opens to home with autossh. It reaches the Offsite box at `192.168.1.21:2222` from the home LAN or the home VPN.
+_Avoid_: VPN, backdoor
+
+**Tunnel endpoint**:
+The host that holds the keepalived VIP `192.168.1.21`, cary or mini. Its sshd accepts the Reverse tunnel on port 22022.
+
+**Tunnel user**:
+The `tunnel` account on the Offsite box and on each Tunnel endpoint. It can only forward one port and has no shell.

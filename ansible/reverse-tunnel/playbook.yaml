@@ -1,0 +1,146 @@
+---
+- name: Create the tunnel user
+  hosts: tunnel_endpoints:tunnel_clients
+  become: true
+  tasks:
+    - name: Create tunnel user
+      ansible.builtin.user:
+        name: "{{ tunnel_user }}"
+        system: true
+        home: "{{ tunnel_home }}"
+        create_home: true
+        shell: /usr/sbin/nologin
+
+    - name: Create .ssh directory
+      ansible.builtin.file:
+        path: "{{ tunnel_home }}/.ssh"
+        state: directory
+        owner: "{{ tunnel_user }}"
+        group: "{{ tunnel_user }}"
+        mode: "0700"
+
+- name: Create the tunnel client key
+  hosts: tunnel_clients
+  become: true
+  tasks:
+    - name: Generate client key
+      ansible.builtin.command: >-
+        ssh-keygen -t ed25519 -N ""
+        -C {{ tunnel_user }}@{{ inventory_hostname }}
+        -f {{ client_key_path }}
+      args:
+        creates: "{{ client_key_path }}"
+
+    - name: Give client key to tunnel user
+      ansible.builtin.file:
+        path: "{{ item }}"
+        owner: "{{ tunnel_user }}"
+        group: "{{ tunnel_user }}"
+      loop:
+        - "{{ client_key_path }}"
+        - "{{ client_key_path }}.pub"
+
+    - name: Read client public key
+      ansible.builtin.slurp:
+        src: "{{ client_key_path }}.pub"
+      register: client_key
+
+    - name: Remember client public key
+      ansible.builtin.set_fact:
+        client_public_key: "{{ client_key.content | b64decode | trim }}"
+
+- name: Set up the tunnel endpoints
+  hosts: tunnel_endpoints
+  become: true
+  force_handlers: true
+  handlers:
+    # Ubuntu's ssh.socket takes its ports from sshd_config only when the
+    # systemd generator runs again. https://discourse.ubuntu.com/t/sshd-now-uses-socket-based-activation-ubuntu-22-10-and-later/30189
+    - name: Restart sshd
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: restarted
+        daemon_reload: true
+      loop:
+        - ssh.socket
+        - ssh.service
+  tasks:
+    - name: Authorize client key
+      ansible.builtin.template:
+        src: ./files/authorized_keys.j2
+        dest: "{{ tunnel_home }}/.ssh/authorized_keys"
+        owner: "{{ tunnel_user }}"
+        group: "{{ tunnel_user }}"
+        mode: "0600"
+      vars:
+        client_public_key: "{{ hostvars[groups['tunnel_clients'][0]].client_public_key }}"
+
+    - name: Install sshd config
+      ansible.builtin.template:
+        src: ./files/60-reverse-tunnel.conf.j2
+        dest: /etc/ssh/sshd_config.d/60-reverse-tunnel.conf
+        owner: root
+        group: root
+        mode: "0644"
+        validate: /usr/sbin/sshd -t -f %s
+      notify: Restart sshd
+
+    - name: Verify sshd config
+      ansible.builtin.command: /usr/sbin/sshd -t
+      changed_when: false
+
+    - name: Apply sshd config
+      ansible.builtin.meta: flush_handlers
+
+    - name: Check that sshd listens on the tunnel port
+      ansible.builtin.wait_for:
+        port: "{{ tunnel_ssh_port }}"
+        timeout: 15
+
+    - name: Read host key
+      ansible.builtin.slurp:
+        src: /etc/ssh/ssh_host_ed25519_key.pub
+      register: host_key
+
+    - name: Remember host key
+      ansible.builtin.set_fact:
+        endpoint_host_key: "{{ (host_key.content | b64decode).split()[:2] | join(' ') }}"
+
+- name: Start the tunnel client
+  hosts: tunnel_clients
+  become: true
+  handlers:
+    - name: Restart tunnel
+      ansible.builtin.systemd:
+        name: reverse-tunnel
+        state: restarted
+        daemon_reload: true
+  tasks:
+    - name: Install autossh
+      ansible.builtin.apt:
+        name: autossh
+        state: present
+
+    - name: Install endpoint host keys
+      ansible.builtin.template:
+        src: ./files/known_hosts.j2
+        dest: "{{ known_hosts_path }}"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Install service
+      ansible.builtin.template:
+        src: ./files/reverse-tunnel.service.j2
+        dest: /etc/systemd/system/reverse-tunnel.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart tunnel
+
+    - name: Enable and start service
+      ansible.builtin.systemd:
+        name: reverse-tunnel
+        state: started
+        enabled: true
+        daemon_reload: true

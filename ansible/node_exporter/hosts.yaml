@@ -13,6 +13,17 @@ all:
       ansible_host: littlebox
       ansible_user: root
       arch: amd64
+    crents:
+      ansible_host: crents
+      ansible_user: root
+      arch: amd64
+      # crents reaches home only through the reverse tunnel, so it cannot
+      # reach the Pushgateway. Prometheus scrapes these metrics over the
+      # tailnet.
+      textfile_dir: /var/lib/node_exporter/textfile
+      # The friend's LAN must not see the metrics. node_exporter retries
+      # until tailscaled brings up this address after a boot.
+      listen_address: 100.72.21.85:9100
     ttv:
       ansible_host: ttv
       ansible_user: jutonz

@@ -1,0 +1,3 @@
+{% for host in groups['tunnel_endpoints'] %}
+reverse-tunnel {{ hostvars[host].endpoint_host_key }}
+{% endfor %}

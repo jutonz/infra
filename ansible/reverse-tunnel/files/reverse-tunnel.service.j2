@@ -1,0 +1,28 @@
+[Unit]
+Description=Reverse SSH tunnel to {{ tunnel_hostname }}
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User={{ tunnel_user }}
+# autossh gives up if the first connection fails within 30 seconds,
+# which happens when the box boots before the network is usable.
+Environment=AUTOSSH_GATETIME=0
+ExecStart=/usr/bin/autossh -M 0 -N \
+  -o ServerAliveInterval=30 \
+  -o ServerAliveCountMax=3 \
+  -o ExitOnForwardFailure=yes \
+  -o BatchMode=yes \
+  -o IdentitiesOnly=yes \
+  -o StrictHostKeyChecking=yes \
+  -o HostKeyAlias=reverse-tunnel \
+  -o UserKnownHostsFile={{ known_hosts_path }} \
+  -i {{ client_key_path }} \
+  -p {{ tunnel_ssh_port }} \
+  -R {{ tunnel_listen_address }}:{{ tunnel_listen_port }}:localhost:22 \
+  {{ tunnel_user }}@{{ tunnel_hostname }}
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,22 @@
+name: tailscale-policy
+on:
+  push:
+    branches: ["main"]
+    paths: ["tailscale/policy.hujson"]
+  pull_request:
+    branches: ["main"]
+    paths: ["tailscale/policy.hujson"]
+jobs:
+  policy:
+    name: Tailscale policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test or apply policy
+        uses: tailscale/gitops-acl-action@v1
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tailnet: ${{ secrets.TS_TAILNET }}
+          policy-file: tailscale/policy.hujson
+          action: ${{ github.event_name == 'push' && 'apply' || 'test' }}

@@ -7,6 +7,9 @@ all:
     cary:
       ansible_host: cary
       ansible_user: root
+    crents:
+      ansible_host: crents
+      ansible_user: root
     ttv:
       ansible_host: ttv
       ansible_user: jutonz
