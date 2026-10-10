@@ -33,6 +33,13 @@
         state: present
         update_cache: false
 
+    - name: Create textfile collector directory
+      when: textfile_dir is defined
+      ansible.builtin.file:
+        path: "{{ textfile_dir }}"
+        state: directory
+        mode: "0755"
+
     - name: Install apt upgrade metrics push script
       ansible.builtin.template:
         src: ./files/prom_apt_upgradable_push.sh.j2
@@ -70,8 +77,9 @@
         dest: /usr/lib/systemd/system/node_exporter.service
         mode: "0644"
       vars:
-        command_line_args:
-          - --web.listen-address=:9100
+        command_line_args: >-
+          {{ ['--web.listen-address=:9100']
+             + (['--collector.textfile.directory=' ~ textfile_dir] if textfile_dir is defined else []) }}
 
     - name: Enable and start service
       ansible.builtin.systemd:

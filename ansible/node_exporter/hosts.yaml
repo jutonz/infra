@@ -13,6 +13,13 @@ all:
       ansible_host: littlebox
       ansible_user: root
       arch: amd64
+    crents:
+      ansible_host: crents
+      ansible_user: root
+      arch: amd64
+      # crents opens no connections to home, so it cannot reach the
+      # Pushgateway. Prometheus scrapes these metrics over the tailnet.
+      textfile_dir: /var/lib/node_exporter/textfile
     ttv:
       ansible_host: ttv
       ansible_user: jutonz

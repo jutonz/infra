@@ -20,5 +20,12 @@ node_reboot_required ${REBOOT_REQUIRED}
 EOF_METRICS
 )
 
+{% if textfile_dir is defined %}
+# node_exporter reads every *.prom file, so write under another name and
+# rename to keep it from reading a partial file.
+printf "%s\n" "${METRICS}" > "{{ textfile_dir }}/apt_upgradable.prom.tmp"
+mv "{{ textfile_dir }}/apt_upgradable.prom.tmp" "{{ textfile_dir }}/apt_upgradable.prom"
+{% else %}
 printf "%s\n" "${METRICS}" | curl -XPOST --fail --silent --show-error --data-binary @- \
   "{{ pushgateway_url }}/metrics/job/apt_upgradable/instance/$(hostname)"
+{% endif %}
