@@ -3,6 +3,9 @@ kind: Kustomization
 namespace: monitoring
 resources:
 - ./namespace.yaml
+- ./blackbox-exporter-config-configmap.yaml
+- ./blackbox-exporter-deployment.yaml
+- ./blackbox-exporter-service.yaml
 - ./otel-collector-config-configmap.yaml
 - ./otel-collector-deployment.yaml
 - ./otel-collector-service.yaml

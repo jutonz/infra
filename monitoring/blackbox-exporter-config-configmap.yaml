@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: blackbox-exporter
+  name: blackbox-exporter-config
+data:
+  blackbox.yml: |
+    modules:
+      ssh_banner:
+        prober: tcp
+        timeout: 10s
+        tcp:
+          query_response:
+            - expect: "^SSH-2.0-"
