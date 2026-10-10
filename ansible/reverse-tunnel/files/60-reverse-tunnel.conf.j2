@@ -1,0 +1,19 @@
+# sshd stops listening on 22 when any Port line is present, so 22 must
+# stay listed here.
+Port 22
+Port {{ tunnel_ssh_port }}
+
+Match LocalPort {{ tunnel_ssh_port }}
+  AllowUsers tunnel
+  AuthenticationMethods publickey
+  AllowTcpForwarding remote
+  GatewayPorts clientspecified
+  PermitListen {{ tunnel_listen_address }}:{{ tunnel_listen_port }}
+  # A dead session keeps holding the listen port, so the client cannot
+  # reconnect until sshd notices the session is gone.
+  ClientAliveInterval 15
+  ClientAliveCountMax 3
+  PermitTTY no
+  X11Forwarding no
+  AllowAgentForwarding no
+  ForceCommand /usr/sbin/nologin

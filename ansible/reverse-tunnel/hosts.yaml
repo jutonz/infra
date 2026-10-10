@@ -1,0 +1,21 @@
+---
+all:
+  vars:
+    tunnel_hostname: tunnel.jutonz.com
+    tunnel_ssh_port: 22022
+    tunnel_listen_address: 192.168.1.21
+    tunnel_listen_port: 2222
+  children:
+    tunnel_endpoints:
+      hosts:
+        cary:
+          ansible_host: cary
+          ansible_user: root
+        mini:
+          ansible_host: mini
+          ansible_user: root
+    tunnel_clients:
+      hosts:
+        crents:
+          ansible_host: crents
+          ansible_user: root
