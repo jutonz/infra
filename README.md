@@ -63,3 +63,6 @@ I don't want to be forced to use kubernetes for everything, so I still maintain
 parts of the infrastructure outside of k8s. For those services I'm trying to
 write ansible playbooks so I can store that infrastructure as code. These live
 in the `ansible/` directory.
+
+For the offsite server crents and how to reach it, see
+[tailscale/README.md](tailscale/README.md).
