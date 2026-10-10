@@ -155,22 +155,19 @@ To rotate an OAuth client:
 
 ## Policy changes
 
-`.github/workflows/tailscale-policy.yml` runs when `policy.hujson`
-changes:
+`.github/workflows/tailscale-policy.yml` runs when `policy.hujson` or
+the workflow file changes:
 
 * On a pull request, it tests the policy.
 * On a push to main, it applies the policy.
 
-The workflow needs the GitHub Actions secrets `TS_OAUTH_ID`,
-`TS_OAUTH_SECRET`, and `TS_TAILNET`. These secrets are not yet set up.
-Until they are, apply each change by hand:
+The workflow reads the GitHub Actions secrets `TS_OAUTH_ID`,
+`TS_OAUTH_SECRET`, and `TS_TAILNET`. These secrets hold the credentials
+of the gitops client.
 
-1. Edit `policy.hujson` and merge it.
-2. Paste the file into the JSON editor under Access controls in the admin
-   console.
-
-The next apply from the workflow overwrites edits made in the console.
-Always edit `policy.hujson` first.
+To change the policy, edit `policy.hujson`, then open and merge a pull
+request. Do not edit the policy in the admin console. When the workflow
+next applies the policy, it overwrites your console edits.
 
 ## Monitoring
 
@@ -418,7 +415,7 @@ are done. Use them again only to start from zero.
 3. Create two OAuth clients under Settings → OAuth clients:
    * `gitops`, scope **Policy file: write**. Store the ID, the secret,
      and the tailnet name in the 1Password item `Tailscale`. Also set
-     them as GitHub Actions secrets. This step is not yet done.
+     them as GitHub Actions secrets.
    * `ansible`, scope **Auth keys: write**, tag `tag:ansible` only.
      Store the ID and the secret in the same item.
 4. In DigitalOcean DNS, add `tunnel.jutonz.com` as a CNAME to
