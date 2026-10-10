@@ -1,5 +1,5 @@
-// Applied by .github/workflows/tailscale-policy.yml. Edits made in the
-// admin console are overwritten on the next push to main.
+// .github/workflows/tailscale-policy.yml applies this file. The next push
+// to main overwrites any edit that you make in the admin console.
 {
   // An OAuth client with several tags can only mint keys that carry all
   // of them, so the ansible client holds tag:ansible, which owns the rest.

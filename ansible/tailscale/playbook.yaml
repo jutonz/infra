@@ -36,10 +36,12 @@
       changed_when: false
       failed_when: false
 
-    # An OAuth client secret works as an auth key when the URL parameters
-    # are appended. https://tailscale.com/kb/1215/oauth-clients#registering-new-nodes-using-oauth-credentials
+    # An OAuth client secret works as an auth key when you append the URL
+    # parameters. https://tailscale.com/kb/1215/oauth-clients#registering-new-nodes-using-oauth-credentials
+    # MagicDNS replaces /etc/resolv.conf, which CoreDNS forwards to, so the
+    # join itself must also turn it off.
     - name: Join the tailnet
-      when: (tailscale_status.stdout | from_json).BackendState != 'Running'
+      when: (tailscale_status.stdout | default('{}', true) | from_json).BackendState | default('NeedsLogin') == 'NeedsLogin'
       ansible.builtin.command: >-
         tailscale up
         --auth-key={{ oauth_secret }}?ephemeral=false&preauthorized=true
@@ -65,7 +67,6 @@
       ansible.builtin.fail:
         msg: "{{ tailscale_up.stderr | regex_replace('tskey-[A-Za-z0-9_-]+', 'tskey-REDACTED') }}"
 
-    # MagicDNS would replace /etc/resolv.conf, which CoreDNS forwards to.
     - name: Apply Tailscale preferences
       ansible.builtin.command: >-
         tailscale set
