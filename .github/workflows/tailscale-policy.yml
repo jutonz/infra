@@ -2,10 +2,10 @@ name: tailscale-policy
 on:
   push:
     branches: ["main"]
-    paths: ["tailscale/policy.hujson"]
+    paths: ["tailscale/policy.hujson", ".github/workflows/tailscale-policy.yml"]
   pull_request:
     branches: ["main"]
-    paths: ["tailscale/policy.hujson"]
+    paths: ["tailscale/policy.hujson", ".github/workflows/tailscale-policy.yml"]
 jobs:
   policy:
     name: Tailscale policy
