@@ -62,7 +62,7 @@ only through a node that is on the tailnet.
 | Part              | Value                                              |
 | ----------------- | -------------------------------------------------- |
 | Client unit       | `reverse-tunnel` systemd unit on crents            |
-| Client user       | `tunnel` (no shell)                                |
+| Tunnel user       | `tunnel` (no shell)                                |
 | Dial target       | `tunnel.jutonz.com:22022`                          |
 | DNS               | `tunnel.jutonz.com` CNAME `jutonz.com`, in DigitalOcean |
 | Home IP           | `50.89.198.143`                                    |
@@ -74,13 +74,13 @@ The home IP has not changed so far. A DDNS CronJob is a separate future
 ticket and is not yet set up. If the home IP changes, the tunnel fails
 until you update DNS.
 
-sshd on cary and mini listens on ports 22 and 22022. The
-`Match LocalPort 22022` block in
+sshd on cary and mini listens on ports 22 and 22022.
 `ansible/reverse-tunnel/files/60-reverse-tunnel.conf.j2` sets these
 limits:
 
-* Only the `tunnel` user can log in.
-* The user can only forward ports. It gets no shell and no TTY.
+* On port 22022, only the `tunnel` user can log in.
+* On every port, the `tunnel` user gets no shell, no TTY, no outbound
+  forwards (`PermitOpen none`), and no Unix socket forwards.
 * The user can listen only on `192.168.1.21:2222`.
 * sshd drops a dead session after about 45 s
   (`ClientAliveInterval 15`, `ClientAliveCountMax 3`).
@@ -193,8 +193,12 @@ by itself. Restart it after each config change:
 kubectl -n monitoring rollout restart deploy/prometheus
 ```
 
-crents cannot reach the Pushgateway, because it opens no connections
-home. Its apt metrics and its `node_reboot_required` metric go to
+node_exporter on crents listens only on its tailnet IP, so the friend's
+LAN cannot read the metrics. After a boot, node_exporter fails until
+tailscaled brings up that address, and systemd restarts it every 10 s.
+
+crents reaches home only through the reverse tunnel, so it cannot reach
+the Pushgateway. Its apt metrics and its `node_reboot_required` metric go to
 `/var/lib/node_exporter/textfile`. Prometheus scrapes them over the
 tailnet with the other node_exporter metrics.
 
@@ -276,7 +280,7 @@ Use this procedure after a fresh OS install. Do it at home if you can.
 9. Run the acceptance checklist.
 
 At the friend's house, the friend only plugs in Ethernet and power, then
-turns the box on. A smart plug for remote power cycles is planned but not
+turns the box on. I plan a smart plug for remote power cycles. It is not
 yet set up.
 
 ### Test on a phone hotspot
