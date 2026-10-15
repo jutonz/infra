@@ -22,10 +22,21 @@ spec:
         diun.max_tags: "2"
         diun.include_tags: '^v[0-9]+\.[0-9]+\.[0-9]+$'
     spec:
+      securityContext:
+        fsGroup: 65534
       containers:
         - image: prom/pushgateway:v1.11.4
           name: pushgateway
+          args:
+            - "--persistence.file=/data/metrics"
           ports:
             - containerPort: 9091
               protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: pushgateway-data
       restartPolicy: Always
+      volumes:
+        - name: pushgateway-data
+          persistentVolumeClaim:
+            claimName: pushgateway-data-lh

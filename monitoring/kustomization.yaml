@@ -16,6 +16,7 @@ resources:
 - ./prometheus-deployment.yaml
 - ./prometheus-service.yaml
 - ./prometheus-ingress.yaml
+- ./pushgateway-data-lh-pvc.yaml
 - ./pushgateway-deployment.yaml
 - ./pushgateway-service.yaml
 - ./pushgateway-ingress.yaml
