@@ -16,17 +16,14 @@ spec:
         diun.watch_repo: "true"
         diun.sort_tags: "semver"
         diun.max_tags: "2"
-        diun.include_tags: '^v?[0-9]+\.[0-9]+\.[0-9]+(-cli)?$'
+        diun.include_tags: '^v?[0-9]+\.[0-9]+\.[0-9]+(-patch[0-9]+)?(-cli)?$'
       labels:
         app: vault-sync
     spec:
       initContainers:
         - name: configure-cli
           # https://github.com/vrtmrz/obsidian-livesync/pkgs/container/livesync-cli
-          # This digest is the 1.0.34 edge build of 2026-10-02. No X.Y.Z-cli
-          # tag includes the 1.0.33 vault ID key yet; 1.0.32-cli has no
-          # support for it. Move to the first tag >= 1.0.34.
-          image: ghcr.io/vrtmrz/livesync-cli:edge@sha256:8e9d80f5b1ea201092da6d96646b025d0cfa0a55e9cd7ab2797e9318b98fd527
+          image: ghcr.io/vrtmrz/livesync-cli:1.0.36-patch2-cli@sha256:e94618aa14a0cf4429f5db3a72cd0b20807b1b1bac449e481c30623289b0a3d7
           command: ["sh", "/scripts/configure-cli.sh"]
           env:
             - name: DATABASE
@@ -53,7 +50,7 @@ spec:
               mountPath: /scripts
       containers:
         - name: livesync-cli
-          image: ghcr.io/vrtmrz/livesync-cli:edge@sha256:8e9d80f5b1ea201092da6d96646b025d0cfa0a55e9cd7ab2797e9318b98fd527
+          image: ghcr.io/vrtmrz/livesync-cli:1.0.36-patch2-cli@sha256:e94618aa14a0cf4429f5db3a72cd0b20807b1b1bac449e481c30623289b0a3d7
           command: ["node", "/app/dist/index.cjs", "/data/db", "--settings", "/data/db/settings.json", "--vault", "/data/vault", "daemon"]
           resources:
             limits:
