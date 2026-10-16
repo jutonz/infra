@@ -24,7 +24,7 @@ spec:
         # The CouchDB entrypoint chmods every file under /opt/couchdb/etc
         # and exits when one is read-only, as a ConfigMap mount is.
         - name: copy-config
-          image: couchdb:3.5.2
+          image: couchdb:3.5.3
           command: ["cp", "/config/livesync.ini", "/local.d/livesync.ini"]
           volumeMounts:
             - name: config
@@ -33,7 +33,7 @@ spec:
               mountPath: /local.d
       containers:
         - name: couchdb
-          image: couchdb:3.5.2
+          image: couchdb:3.5.3
           env:
             - name: COUCHDB_USER
               valueFrom:
