@@ -25,19 +25,53 @@ report_success() {
     wget -q -O /dev/null --post-file=/dev/stdin "$PUSHGATEWAY_URL/metrics/job/livesync_git_backup"
 }
 
+NOTES_URL="http://livesync-server:${LIVESYNC_SERVER_PASSWORD}@couchdb:5984/${DATABASE}"
+NOTE_VERSIONS=/tmp/note-versions
+
+# CouchDB writes each row of _all_docs and _changes on its own line.
+# Print one line per note: its ID, whether it is deleted, and its chunk list.
+note_versions() {
+  awk '
+    match($0, /"_id":"f:[^"]*"/) {
+      id = substr($0, RSTART + 7, RLENGTH - 8)
+      state = $0 ~ /"_?deleted":true/ ? "deleted" : "live"
+      children = match($0, /"children":\[[^]]*\]/) ? substr($0, RSTART, RLENGTH) : ""
+      print id, state, children
+    }'
+}
+
+load_note_versions() {
+  wget -q -O "$NOTE_VERSIONS.json" "$NOTES_URL/_all_docs?startkey=%22f%3A%22&endkey=%22f%3A%EF%BF%B0%22&include_docs=true" || return 1
+  note_versions < "$NOTE_VERSIONS.json" > "$NOTE_VERSIONS"
+  rm -f "$NOTE_VERSIONS.json"
+}
+
 # LiveSync stores each note's metadata in a document whose ID starts with
 # "f:". Chunks and customization sync use other prefixes. CouchDB seqs are
 # opaque and, on a sharded database, not comparable between requests, so
 # resume from the previous last_seq instead.
+#
+# Obsidian sometimes saves a note again with the same chunks. The CLI writes
+# nothing to the vault for that save, so only a new chunk list or a deletion
+# counts as a note change.
 poll_note_changes() {
-  changes=$(wget -q -O - "http://livesync-server:${LIVESYNC_SERVER_PASSWORD}@couchdb:5984/${DATABASE}/_changes?since=${since}") || return 1
-  next_since=$(printf '%s' "$changes" | grep -o '"last_seq":"[^"]*"' | cut -d '"' -f 4)
+  [ -s "$NOTE_VERSIONS" ] || load_note_versions || return 1
+  wget -q -O "$NOTE_VERSIONS.json" \
+    --header 'Content-Type: application/json' \
+    --post-data '{"selector":{"_id":{"$regex":"^f:"}}}' \
+    "$NOTES_URL/_changes?filter=_selector&include_docs=true&since=${since}" || return 1
+  next_since=$(grep -o '"last_seq":"[^"]*"' "$NOTE_VERSIONS.json" | cut -d '"' -f 4)
   [ -n "$next_since" ] || return 1
   since=$next_since
+  note_versions < "$NOTE_VERSIONS.json" > "$NOTE_VERSIONS.changed"
+  rm -f "$NOTE_VERSIONS.json"
   note_changed=0
-  case $changes in
-    *'"id":"f:'*) note_changed=1 ;;
-  esac
+  if grep -q -v -x -F -f "$NOTE_VERSIONS" "$NOTE_VERSIONS.changed"; then
+    note_changed=1
+  fi
+  awk 'NR == FNR { changed[$1] = 1; next } !($1 in changed)' "$NOTE_VERSIONS.changed" "$NOTE_VERSIONS" |
+    cat - "$NOTE_VERSIONS.changed" > "$NOTE_VERSIONS.next"
+  mv "$NOTE_VERSIONS.next" "$NOTE_VERSIONS"
 }
 
 # The CLI copies each note's mtime from the Remote, so only ctime shows when
