@@ -69,7 +69,9 @@ poll_note_changes() {
   if grep -q -v -x -F -f "$NOTE_VERSIONS" "$NOTE_VERSIONS.changed"; then
     note_changed=1
   fi
-  awk 'NR == FNR { changed[$1] = 1; next } !($1 in changed)' "$NOTE_VERSIONS.changed" "$NOTE_VERSIONS" |
+  awk -v changed_file="$NOTE_VERSIONS.changed" \
+    'FILENAME == changed_file { changed[$1] = 1; next } !($1 in changed)' \
+    "$NOTE_VERSIONS.changed" "$NOTE_VERSIONS" |
     cat - "$NOTE_VERSIONS.changed" > "$NOTE_VERSIONS.next"
   mv "$NOTE_VERSIONS.next" "$NOTE_VERSIONS"
 }
