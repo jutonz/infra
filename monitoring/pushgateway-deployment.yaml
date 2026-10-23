@@ -25,7 +25,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-        - image: prom/pushgateway:v1.11.4
+        - image: prom/pushgateway:v1.11.5
           name: pushgateway
           args:
             - "--persistence.file=/data/metrics"

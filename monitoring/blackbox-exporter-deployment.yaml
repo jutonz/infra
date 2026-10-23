@@ -21,7 +21,7 @@ spec:
         diun.include_tags: '^v[0-9]+\.[0-9]+\.[0-9]+$'
     spec:
       containers:
-        - image: prom/blackbox-exporter:v0.29.0
+        - image: prom/blackbox-exporter:v0.29.1
           name: blackbox-exporter
           args:
             - "--config.file=/etc/blackbox_exporter/blackbox.yml"
