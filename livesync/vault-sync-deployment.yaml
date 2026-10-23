@@ -23,7 +23,7 @@ spec:
       initContainers:
         - name: configure-cli
           # https://github.com/vrtmrz/obsidian-livesync/pkgs/container/livesync-cli
-          image: ghcr.io/vrtmrz/livesync-cli:1.0.36-patch2-cli
+          image: ghcr.io/vrtmrz/livesync-cli:1.0.39-cli
           command: ["sh", "/scripts/configure-cli.sh"]
           env:
             - name: DATABASE
@@ -50,7 +50,7 @@ spec:
               mountPath: /scripts
       containers:
         - name: livesync-cli
-          image: ghcr.io/vrtmrz/livesync-cli:1.0.36-patch2-cli
+          image: ghcr.io/vrtmrz/livesync-cli:1.0.39-cli
           command: ["node", "/app/dist/index.cjs", "/data/db", "--settings", "/data/db/settings.json", "--vault", "/data/vault", "daemon"]
           resources:
             limits:
