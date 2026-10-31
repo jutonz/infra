@@ -48,7 +48,20 @@ The SSH route that the Offsite box opens to home with autossh. It reaches the Of
 _Avoid_: VPN, backdoor
 
 **Tunnel endpoint**:
-The host that holds the keepalived VIP `192.168.1.21`, cary or mini. Its sshd accepts the Reverse tunnel on port 22022.
+The VIP host that holds the VIP at the moment. Its sshd accepts the Reverse tunnel on port 22022.
 
 **Tunnel user**:
 The `tunnel` account on the Offsite box and on each Tunnel endpoint. It can only forward one port and has no shell.
+
+## Node maintenance
+
+**Data node**:
+A k3s node that holds Longhorn replicas. Today that is cary, mini, and littlebox.
+_Avoid_: server node, master
+
+**VIP host**:
+A host that runs keepalived for the VIP `192.168.1.21`, through which the k3s API and the Reverse tunnel are reached. Today that is cary and mini.
+_Avoid_: VIP holder, load balancer
+
+**Maintenance window**:
+The time from the drain of a data node until every Longhorn volume is healthy again. Only one data node is in a maintenance window at a time.
