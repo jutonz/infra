@@ -45,7 +45,7 @@ Read the node's current state before you change anything:
 
 If an earlier run stopped partway (node cordoned, or keepalived stopped),
 tell the user where it stopped. Offer two paths: **resume** at the matching
-step, or **abort** (go to step 6 with no reboot).
+step, or **abort** (go to step 5 with no reboot, then step 6).
 
 Done when you know the node's state and the user chose fresh run, resume,
 or abort.
