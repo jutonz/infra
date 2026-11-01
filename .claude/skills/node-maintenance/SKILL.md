@@ -12,7 +12,9 @@ You drive every command. The user owns two decisions: the go after
 preflight, and any fix when something breaks.
 
 Arguments: `<node>` is `cary`, `mini`, or `littlebox`. `--reboot` means the
-user already chose a reboot; do not ask again.
+user already chose a reboot. Treat a misspelling such as `--reboto` as
+`--reboot`. With `--reboot`, do not ask about the reboot at all, not even
+to confirm it; ask only for go.
 
 Facts the steps depend on:
 
