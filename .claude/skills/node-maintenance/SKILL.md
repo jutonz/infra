@@ -17,8 +17,9 @@ user already chose a reboot; do not ask again.
 Facts the steps depend on:
 
 - kubectl reaches the API through the VIP `192.168.1.21`. The **VIP hosts**
-  are cary (MASTER) and mini (BACKUP); littlebox runs no keepalived. If both
-  VIP hosts lose keepalived, kubectl stops working.
+  are cary and mini, at equal priority, so the VIP stays on whichever host
+  holds it; it moves only when that host's keepalived stops. littlebox runs
+  no keepalived. If both VIP hosts lose keepalived, kubectl stops working.
 - All three nodes run etcd. Two nodes down loses quorum.
 - Longhorn has `disable-scheduling-on-cordoned-node: true`, so replicas
   cannot rebuild onto the node until you uncordon it.
@@ -58,8 +59,12 @@ Check each gate. Refuse to continue if one fails, and show why:
 2. Every other node is `Ready`.
 3. Every volume is healthy.
 4. If `<node>` is a VIP host, keepalived is active on the other VIP host.
+5. `ssh -o BatchMode=yes root@<host> true` succeeds for `<node>`, and for
+   the other VIP host when `<node>` is a VIP host. A locked SSH agent fails
+   this gate; ask the user to unlock it.
 
-Then show one report: the node, what happens to the VIP, the pods that
+Then show one report: the node, what happens to the VIP (if `<node>`
+holds it, the VIP moves to the other VIP host and stays there), the pods that
 will move (`kubectl get pods -A --field-selector spec.nodeName=<node>`),
 and for mini, that psql goes down until mini returns. Ask for go. Without
 `--reboot`, ask in the same question whether to reboot.
@@ -79,15 +84,17 @@ with the pods that still block the drain.
 
 ## 4. Maintenance
 
-With a reboot:
+With a reboot, record the boot ID, reboot, and run the wait script in the
+background:
 
 ```sh
+kubectl get node <node> -o jsonpath='{.status.nodeInfo.bootID}'
 ssh root@<node> reboot
+.claude/skills/node-maintenance/scripts/wait-ready.sh <node> <boot-id>
 ```
 
-Wait in the background, so the session stays responsive, until SSH answers
-(`ssh -o ConnectTimeout=5 -o BatchMode=yes root@<node> true`) and the node
-is `Ready`. Allow 15 minutes.
+The script exits 0 when the node is `Ready` on a new boot, and exits 1
+after 15 minutes.
 
 Without a reboot: tell the user the node is drained, and wait until they
 say the work is done.
@@ -113,9 +120,15 @@ keepalived is active on each VIP host.
 
 ## 6. Heal
 
-Wait in the background until every volume is healthy. Report progress as
-the count of volumes that are not yet healthy. A rebuild is **stalled**
-when that count does not drop for 15 minutes.
+Run the wait script in the background:
+
+```sh
+.claude/skills/node-maintenance/scripts/wait-healthy.sh
+```
+
+It prints the count of volumes that are not healthy and each rebuild's
+progress whenever either changes. It exits 0 when every volume is healthy.
+It exits 1 when the rebuilds are **stalled**: no change for 15 minutes.
 
 Done when every volume is healthy. Report the final state: node Ready and
 uncordoned, keepalived active on each VIP host, every volume healthy.
