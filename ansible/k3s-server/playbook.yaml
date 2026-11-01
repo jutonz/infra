@@ -7,6 +7,20 @@
       ansible.builtin.command: sysctl --system
       changed_when: true
   tasks:
+    # The k3s install script rewrites ExecStart from its arguments on every
+    # run, so a flag kept there is lost when an upgrade omits it. Keep server
+    # options here; k3s reads this file at startup.
+    - name: Write k3s server config
+      ansible.builtin.copy:
+        dest: /etc/rancher/k3s/config.yaml
+        content: |
+          tls-san:
+            - jutonz.com
+            - 192.168.1.21
+        owner: root
+        group: root
+        mode: "0600"
+
     - name: Install cron job to prune old images
       ansible.builtin.cron:
         name: "Prune k3s images"
