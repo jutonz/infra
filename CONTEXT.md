@@ -65,3 +65,9 @@ _Avoid_: VIP holder, load balancer
 
 **Maintenance window**:
 The time from the drain of a data node until every Longhorn volume is healthy again. Only one data node is in a maintenance window at a time.
+
+## Upgrades
+
+**Hop**:
+One move of a component, such as k3s or Longhorn, from the installed version to one target version: the newest patch of the same minor, or the next minor. A move that skips a minor is never a hop.
+_Avoid_: step, jump
