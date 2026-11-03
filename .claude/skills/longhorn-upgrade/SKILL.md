@@ -88,8 +88,25 @@ EOF
 Wait until `kubectl -n longhorn-system get backups.longhorn.io
 pre-<target>-<volume>` shows `Completed`.
 
+Then take a Longhorn system backup, which the upgrade docs recommend. It
+saves Longhorn's own resources and points at the volume backups above:
+
+```sh
+kubectl -n longhorn-system create -f - <<EOF
+apiVersion: longhorn.io/v1beta2
+kind: SystemBackup
+metadata:
+  name: pre-<target>
+spec:
+  volumeBackupPolicy: disabled
+EOF
+```
+
+Wait until `kubectl -n longhorn-system get systembackups.longhorn.io
+pre-<target>` shows `Ready`.
+
 Done when every volume in the group has a backup newer than 26 hours, or
-the user chose to skip it.
+the user chose to skip it, and the system backup is `Ready`.
 
 ## 3. Branch
 
@@ -181,7 +198,7 @@ Then delete each engine image that no volume uses. List them with
 `kubectl -n longhorn-system get engineimages.longhorn.io`, and delete each
 one whose `REFCOUNT` is 0 and whose image is not the new default.
 
-Write the result, the manual backups from step 2, and anything the user
+Write the result, the backups from step 2, and anything the user
 accepted into `Outcome` in the review file. Commit, push, and open the PR
 with the title `Upgrade Longhorn to <target>`.
 
@@ -197,7 +214,8 @@ the run. Change nothing on your own. Then:
 1. Investigate read-only: `kubectl describe`, events, the
    `longhorn-manager` logs, and Longhorn `volumes`, `engines`, and
    `replicas`.
-2. Search past incidents with `jt-notion-incident`.
+2. Search past incidents in the Obsidian notes at
+   `~/code/jutonz/notes/Tech/Incidents/`.
 3. Give the user the cause and a proposed fix. Change nothing until they
    approve.
 

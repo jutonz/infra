@@ -49,7 +49,8 @@ Every verdict cites evidence. Look it up; do not assume:
   `backuptargets.longhorn.io`, `nodes.longhorn.io`, and the
   StorageClasses.
 - This repo: `longhorn/` and every PVC that uses a Longhorn StorageClass.
-- Past incidents: the `jt-notion-incident` search for Longhorn.
+- Past incidents: `grep -l -i longhorn` in the Obsidian notes at
+  `~/code/jutonz/notes/Tech/Incidents/`, then read each match.
 
 ## Review file
 
