@@ -168,4 +168,5 @@ device. LiveSync then sends it to every other device.
 | Vault Mirror: "remote database is locked" | Remote Lock after a Rebuild | "Reset the Vault Mirror" |
 | Vault Mirror: `EMFILE: too many open files, watch` | Node inotify limit | `ansible/k3s-server` sets `fs.inotify.max_user_instances=1024` |
 | Vault Mirror: "No sync will occur" | `liveSync` off in the Setup URI | `scripts/configure-cli.sh` forces it on; check the init log |
+| Vault Mirror: "[Legacy state] … owner is unknown" | Runtime state from a CLI older than 1.0.45 | Run `fetch --force` once in a one-off pod, as in "Reset the Vault Mirror" |
 | No new commits | Push or SSH failure | `kubectl -n livesync logs deploy/vault-sync -c git-backup` |
