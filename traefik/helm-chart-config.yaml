@@ -10,3 +10,8 @@ spec:
         level: INFO
       access:
         enabled: true
+    ports:
+      websecure:
+        transport:
+          respondingTimeouts:
+            readTimeout: 30m
