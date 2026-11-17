@@ -35,9 +35,14 @@ spec:
             - containerPort: 19333
               protocol: TCP
           volumeMounts:
+            - name: data
+              mountPath: /data
             - name: config
               mountPath: /etc/seaweedfs
       volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: master-data
         - name: config
           configMap:
             name: master-config
