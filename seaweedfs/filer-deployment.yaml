@@ -15,7 +15,7 @@ spec:
         io.kompose.service: filer
     spec:
       containers:
-        - image: chrislusf/seaweedfs:4.53
+        - image: chrislusf/seaweedfs:4.54
           name: filer
           args:
             - filer
